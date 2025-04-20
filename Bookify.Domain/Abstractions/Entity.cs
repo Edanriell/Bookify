@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Bookify.Domain.Abstractions;
 
 // Domain entity must have two important qualities, it should have an id (identity), also it must be continuous,
@@ -9,6 +5,7 @@ namespace Bookify.Domain.Abstractions;
 // Abstract classes cannot have an instance, they must be inherited
 public abstract class Entity
 {
+	// Property _domainEvents contains all domain events that are raised on this particular entity instance. 
 	private readonly List<IDomainEvent> _domainEvents = new();
 
 	protected Entity(Guid id)
@@ -21,16 +18,19 @@ public abstract class Entity
 	// If this is very important for our system, we can override the Equals method and also implement the IEquatable interface
 	public Guid Id { get; init; }
 
+	// Method GetDomainEvents enables us to fetch all of the domain events that are raised on a particular entity instance.
 	public IReadOnlyList<IDomainEvent> GetDomainEvents()
 	{
 		return _domainEvents.ToList();
 	}
 
+	// Method ClearDomainEvents clears all of the domain events that are raised on a particular entity instance.
 	public void ClearDomainEvents()
 	{
 		_domainEvents.Clear();
 	}
 
+	// Method RaiseDomainEvent adds a domain event to the list of domain events that are raised on a particular entity instance.
 	protected void RaiseDomainEvent(IDomainEvent domainEvent)
 	{
 		_domainEvents.Add(domainEvent);

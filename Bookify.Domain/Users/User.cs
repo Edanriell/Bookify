@@ -25,6 +25,10 @@ public sealed class User : Entity
 	{
 		var user = new User(Guid.NewGuid(), firstName, lastName, email);
 
+		// When we persist the user object in the database, we are also going to publish the UserCreatedDomainEvent
+		// In result someone can subscribe to this event and execute some behavior asynchronously.
+		// An example of that could be sending an welcome email to the user when they register to the system or
+		// doing some background work to further set up the user so our system could be used properly.
 		user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id));
 
 		return user;
