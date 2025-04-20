@@ -7,7 +7,7 @@ namespace Bookify.Domain.Apartments;
 
 // Apartment entity is an anemic domain model
 // because it is basically a bag of data,and it contains only properties and does not contain any behavior logic
-
+ 
 // The Problem with primitive data types,particularly with strings, which are a part of our domain model, is that they convey no meaning
 // To solve primitive obsession and also improve the design of our entity we must use a value object 
 // After all our refactoring we have a Rich domain model instead of an anemic one
