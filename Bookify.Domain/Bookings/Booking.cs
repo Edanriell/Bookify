@@ -102,7 +102,7 @@ public sealed class Booking : Entity
 
 	public Result Confirm(DateTime utcNow)
 	{
-		if (Status != BookingStatus.Reserved) return Result.Failure(BookingError.NotPending);
+		if (Status != BookingStatus.Reserved) return Result.Failure(BookingErrors.NotReserved);
 
 		Status = BookingStatus.Confirmed;
 		ConfirmedOnUtc = utcNow;
@@ -114,8 +114,9 @@ public sealed class Booking : Entity
 
 	public Result Reject(DateTime utcNow)
 	{
-		if (Status != BookingStatus.Reserved) return Result.Failure(BookingErrors.NotPending);
+		if (Status != BookingStatus.Reserved) return Result.Failure(BookingErrors.NotReserved);
 
+		// Setting booking status to rejected and date when rejected
 		Status = BookingStatus.Rejected;
 		RejectedOnUtc = utcNow;
 
@@ -136,9 +137,9 @@ public sealed class Booking : Entity
 		return Result.Success();
 	}
 
-	public IAsyncResult Cancel(DateTime utcNow)
+	public Result Cancel(DateTime utcNow)
 	{
-		if (Status != BookingStatus.Confirmed) return IAsyncResult.Failure(BookingErrors.NotConfirmed);
+		if (Status != BookingStatus.Confirmed) return Result.Failure(BookingErrors.NotConfirmed);
 
 		var currentDate = DateOnly.FromDateTime(utcNow);
 
