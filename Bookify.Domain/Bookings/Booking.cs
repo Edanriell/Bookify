@@ -1,5 +1,6 @@
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Apartments;
+using Bookify.Domain.Bookings.Events;
 
 namespace Bookify.Domain.Bookings;
 
@@ -32,6 +33,26 @@ public sealed class Booking : Entity
 	public DateTime? RejectedOnUtc { get; private set; }
 	public DateTime? CompletedOnUtc { get; private set; }
 	public DateTime? CancelledOnUtc { get; private set; }
+
+	public static Booking Reserve(Guid apartmentId, Guid userId, DateRange duration, DateTime utcNow,
+								  PricingDetails pricingDetails)
+	{
+		var booking = new Booking(
+			Guid.NewGuid(),
+			apartmentId,
+			userId,
+			duration,
+			pricingDetails.PriceForPeriod,
+			pricingDetails.CleaningFee,
+			pricingDetails.AmenitiesUpCharge,
+			pricingDetails.TotalPrice,
+			BookingStatus.Reserved,
+			utcNow);
+
+		booking.RaiseDomainEvent(new BookingReservedDomainEvent(booking.Id));
+
+		return booking;
+	}
 
 	// Factory method
 	// We are missing a lot of the pricing information that is required for a booking
