@@ -4,6 +4,7 @@ namespace Bookify.Domain.Abstractions;
 
 public class Result
 {
+	// Can only be accessed from this assembly inside of this type
 	protected internal Result(bool isSuccess, Error error)
 	{
 		if (isSuccess && error != Error.None) throw new InvalidOperationException();
@@ -55,6 +56,7 @@ public class Result<TValue> : Result
 		_value = value;
 	}
 
+	// We can access the value only if this is a success result
 	[NotNull]
 	public TValue Value => IsSuccess
 							   ? _value!
