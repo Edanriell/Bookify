@@ -11,7 +11,7 @@ public class Result
 
 		if (!isSuccess && error == Error.None) throw new InvalidOperationException();
 
-		isSuccess = isSuccess;
+		IsSuccess = isSuccess;
 		Error = error;
 	}
 
