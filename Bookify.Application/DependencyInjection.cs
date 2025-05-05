@@ -28,10 +28,9 @@ public static class DependencyInjection
 			// Registering logging behavior
 			// Now, when we send our command, it's going to first enter the logging behavior, run the logging statement and then execute
 			// the command handler before returning the response
-			configuration.AddOpenBehavior(
-				typeof(LoggingBehavior<,>));
+			configuration.AddOpenBehavior(typeof(LoggingBehavior<,>));
 
-			configuration.AddOpenBehavior(typeof(ValidationBehaviour<,>));
+			configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
 		});
 
 		// We need to register our validators with dependency injection.
