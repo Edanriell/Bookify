@@ -17,15 +17,19 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IUserRepository _userRepository;
 
-	public ReserveBookingCommandHandler(IApartmentRepository apartmentRepository, IBookingRepository bookingRepository,
-										PricingService pricingService, IUnitOfWork unitOfWork,
-										IUserRepository userRepository, IDateTimeProvider dateTimeProvider)
+	public ReserveBookingCommandHandler(
+		IUserRepository userRepository,
+		IApartmentRepository apartmentRepository,
+		IBookingRepository bookingRepository,
+		IUnitOfWork unitOfWork,
+		PricingService pricingService,
+		IDateTimeProvider dateTimeProvider)
 	{
+		_userRepository = userRepository;
 		_apartmentRepository = apartmentRepository;
 		_bookingRepository = bookingRepository;
-		_pricingService = pricingService;
 		_unitOfWork = unitOfWork;
-		_userRepository = userRepository;
+		_pricingService = pricingService;
 		_dateTimeProvider = dateTimeProvider;
 	}
 
