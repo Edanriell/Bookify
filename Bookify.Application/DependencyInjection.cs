@@ -1,5 +1,6 @@
 using Bookify.Application.Abstractions.Behaviors;
 using Bookify.Domain.Bookings;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bookify.Application;
@@ -29,7 +30,15 @@ public static class DependencyInjection
 			// the command handler before returning the response
 			configuration.AddOpenBehavior(
 				typeof(LoggingBehavior<,>));
+
+			configuration.AddOpenBehavior(typeof(ValidationBehaviour<,>));
 		});
+
+		// We need to register our validators with dependency injection.
+		// All we need to do is to give the assembly where our validators
+		// are defined. This is the application assembly. 
+		//  This is going to scan the assembly and register any validators as an IValidator instance which we are using in our validation behaviour. 
+		services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
 		services.AddTransient<PricingService>();
 
