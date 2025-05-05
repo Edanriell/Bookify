@@ -1,3 +1,4 @@
+using Bookify.Application.Abstractions.Behaviors;
 using Bookify.Domain.Bookings;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,12 @@ public static class DependencyInjection
 			// call register services from assembly, and then we are going to give it an assembly instance.
 			// The typeof(DependencyInjection).Assembly consequently is the application project.
 			configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+
+			// Registering logging behavior
+			// Now, when we send our command, it's going to first enter the logging behavior, run the logging statement and then execute
+			// the command handler before returning the response
+			configuration.AddOpenBehavior(
+				typeof(LoggingBehavior<,>));
 		});
 
 		services.AddTransient<PricingService>();
