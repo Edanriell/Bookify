@@ -1,9 +1,17 @@
+using Bookify.Application;
+using Bookify.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddApplication();
+// This method expects an IConfiguration instance, which we
+// can pass from builder configuration. 
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
