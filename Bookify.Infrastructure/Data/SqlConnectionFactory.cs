@@ -19,7 +19,7 @@ internal sealed class SqlConnectionFactory : ISqlConnectionFactory
 		var connection = new NpgsqlConnection(_connectionString);
 		// Opening connection
 		connection.Open();
-
+ 
 		return connection;
 	}
 }

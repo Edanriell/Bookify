@@ -19,7 +19,9 @@ namespace Bookify.Infrastructure;
 public static class DependencyInjection
 {
 	// Extension method on the IServiceCollection interface
-	public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddInfrastructure(
+		this IServiceCollection services,
+		IConfiguration configuration)
 	{
 		services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 
@@ -28,8 +30,9 @@ public static class DependencyInjection
 		// We are using the IConfiguration instance to get the value of the connection string
 		// from our application settings. This is basically the connection string that
 		// EFCore is going to use connect to our PostgreSQL database instance. 
-		var connectionString = configuration.GetConnectionString("Database") ??
-							   throw new ArgumentNullException(nameof(configuration));
+		var connectionString =
+			configuration.GetConnectionString("Database") ??
+			throw new ArgumentNullException(nameof(configuration));
 
 		// To register EFCore we need to call the AddDbContext method which is exposed by EntityFrameworkCore
 		// We specify our database context as the generic argument, and then on the DatabaseContextOptionsBuilder we 
@@ -55,7 +58,8 @@ public static class DependencyInjection
 		// We use a service provider to resolve the database context and use it as a unit of work implementation. 
 		services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
-		services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
+		services.AddSingleton<ISqlConnectionFactory>(_ =>
+			new SqlConnectionFactory(connectionString));
 
 		SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 

@@ -43,8 +43,12 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 		// Configuring relationships from our booking entity to the apartment by saying has one apartment 
 		// an apartment could have many bookings, which is why we have a call to with many, and we are 
 		// defining which property on the booking entity is our foreign key. The Same approach is for User.
-		builder.HasOne<Apartment>().WithMany().HasForeignKey(booking => booking.ApartmentId);
+		builder.HasOne<Apartment>()
+		   .WithMany()
+		   .HasForeignKey(booking => booking.ApartmentId);
 
-		builder.HasOne<User>().WithMany().HasForeignKey(booking => booking.UserId);
+		builder.HasOne<User>()
+		   .WithMany()
+		   .HasForeignKey(booking => booking.UserId);
 	}
 }

@@ -9,4 +9,4 @@ internal sealed class EmailService : IEmailService
 		// We return task completed task to simulate that this method completed successfully. 
 		return Task.CompletedTask;
 	}
-}
+} 
