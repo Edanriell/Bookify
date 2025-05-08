@@ -32,6 +32,11 @@ public sealed class Apartment : Entity
 		Amenities = amenities;
 	}
 
+	// Fix for migrations
+	private Apartment()
+	{
+	}
+
 	// Id property comes from Entity abstract class, if it stays we will hide an Id property which comes from Entity abstract class
 //	public Guid Id { get; private set; }
 
