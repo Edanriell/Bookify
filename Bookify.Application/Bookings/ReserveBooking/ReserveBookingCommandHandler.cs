@@ -1,5 +1,6 @@
 using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Abstractions.Messaging;
+using Bookify.Application.Exceptions;
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Apartments;
 using Bookify.Domain.Bookings;
@@ -57,34 +58,56 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
 		// There is two ways to solve this problem, pessimistic or optimistic locking. Pessimistic locking means creating
 		// a transaction with some of the more constrictive isolation levels. Optimistic locking means that we have
 		// a concurrency token present on our entitites, and actually this is the approach that we are going to take. 
-		// The reason for using optimistic locking is that it's more performant and it doesn't require locking a certain number
+		// The reason for using optimistic locking is that it's more performant, and it doesn't require locking a certain number
 		// of rows in the database for an extended period of time. 
 
 		// Performing optimistic check on the database to see if we are overlapping for this apartments booking.
 		if (await _bookingRepository.IsOverlappingAsync(apartment, duration, cancellationToken))
 			return Result.Failure<Guid>(BookingErrors.Overlap);
+		// Otherwise, we are going to fail here if somebody actually did manage to reserve a booking before us
+		// and the user interface should handle this accordingly. 
 
-		// If checks succeeds we are reserving the booking
-		var booking = Booking.Reserve(
-			apartment,
-			user.Id,
-			duration,
-			// It is always better to use abstractions
-			// The benefit of this approach is that this is completely testable 
-			// If we  can't reliably test our code that is working with a date time object
-			// then we risk introducing many potential bugs and this approach using a date
-			// time provider abstraction solves that because we can easily mock it and provide the date and time
-			// value that we need to satisfy the test.
-			_dateTimeProvider.UtcNow,
-//			DateTime.UtcNow,
-			_pricingService);
+//		// If checks succeeds we are reserving the booking
+//		var booking = Booking.Reserve(
+//			apartment,
+//			user.Id,
+//			duration,
+//			// It is always better to use abstractions
+//			// The benefit of this approach is that this is completely testable 
+//			// If we  can't reliably test our code that is working with a date time object
+//			// then we risk introducing many potential bugs and this approach using a date
+//			// time provider abstraction solves that because we can easily mock it and provide the date and time
+//			// value that we need to satisfy the test.
+//			_dateTimeProvider.UtcNow,
+////			DateTime.UtcNow,
+//			_pricingService);
+//
+//		// Adding it to the repository 
+//		_bookingRepository.Add(booking);
+//
+//		// And persisting the changes to the database. ! 
+//		await _unitOfWork.SaveChangesAsync(cancellationToken);
+//
+//		return booking.Id;
 
-		// Adding it to the repository 
-		_bookingRepository.Add(booking);
+		try
+		{
+			var booking = Booking.Reserve(
+				apartment, user.Id, duration, _dateTimeProvider.UtcNow, _pricingService);
 
-		// And persisting the changes to the database. ! 
-		await _unitOfWork.SaveChangesAsync(cancellationToken);
+			_bookingRepository.Add(booking);
 
-		return booking.Id;
+			await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+			return booking.Id;
+		}
+		catch (ConcurrencyException)
+		{
+			// We are catching the concurrency exception, and we know that this
+			// is because we have an overlap at the database level. So somebody else
+			// managed to reserve this booking before we could, and they win. We return an overlap error.
+			// On the client side, we could retry reserving the booking again in case this was a transient failure.
+			return Result.Failure<Guid>(BookingErrors.Overlap);
+		}
 	}
 }

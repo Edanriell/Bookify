@@ -44,5 +44,23 @@ internal sealed class ApartmentConfiguration : IEntityTypeConfiguration<Apartmen
 			priceBuilder.Property(money => money.Currency)
 			   .HasConversion(currency => currency.Code, code => Currency.FromCode(code));
 		});
+
+		// Optimistic concurrency is a mechanism that relies on having some column in the database acting
+		// as the version for that row. Usually, this is a database-generated value, and it's used
+		// when persisting changes to the database to check if the version that is currently in the database is different
+		// from the one that we have in our application at the time we loaded the entity. If those versions are not
+		// a match, it means that somebody has changed this row in the database before we could, and we throw
+		// a database concurrency exception, which is the case that we are handling.
+		// IMPORTANT! We can't use the booking because it doesn't exist in the database until we call save changes, so
+		// that leaves us with either using the user or the apartment. If we look at the booking reserve method, we have a nice
+		// little call, where we are setting the last booked on value to the current UTC now time (apartment.LastBookedOnUtc = utcNow).
+		// This is going to trigger an update on the apartments table for this specific row, which we are making a booking for,
+		// so we are going to define a row version column on the apartment entity, which is going to help us implement optimistic concurrency. 
+		builder.Property<uint>("Version").IsRowVersion();
+		// We are defining a shadow property on our apartments entity, which we are calling version. We are using unsigned integer as the
+		// type for the row version, and we are calling IsRowVersion() method, which is going to tell EF Core 
+		// that this column should be interpreted as a row version for implementing optimistic concurrency support. 
+		// The really ice thing about the Postgre implementation of optimistic concurrency is that it's going to use a system column,
+		// which is the xmin column, and it holds the value of the last updating transaction. 
 	}
 }
