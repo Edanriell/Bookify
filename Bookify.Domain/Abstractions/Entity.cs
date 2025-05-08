@@ -13,6 +13,11 @@ public abstract class Entity
 		Id = id;
 	}
 
+	// Fix for migrations
+	protected Entity()
+	{
+	}
+
 	// When we set init setter, it means once we define this entity, its id is set for a life
 	// Two entities are equal if their Id is the same.
 	// If this is very important for our system, we can override the Equals method and also implement the IEquatable interface
