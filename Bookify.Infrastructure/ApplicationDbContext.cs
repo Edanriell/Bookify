@@ -1,3 +1,4 @@
+using Bookify.Application.Exceptions;
 using Bookify.Domain.Abstractions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -16,28 +17,43 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
 
 	public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
 	{
-		// We are calling the base save changes async method, then
-		var result = await base.SaveChangesAsync(cancellationToken);
+		try
+		{
+			// We are calling the base save changes async method, then
+			var result = await base.SaveChangesAsync(cancellationToken);
 
-		// We are going to await PublishDomainEvents
-		// There are some caveats of this approach to publish domain events.
-		// What we are doing here is potentially problematic. We are saving changes to the database, and okay this is atomic,
-		// and this is either going to succeed or fail, but when we are publishing a set of domain events which is another
-		// transaction altogether. The domain event handlers could be doing all sorts of things like
-		// calling the database or other external services, and the handlers themselves could also fail. 
-		// This is going to cause an exception which is going to fail the SaveChangesAsync method. 
-		// However, the original call to the database was already successfully completed. So in the case of a domain event handler
-		// failure, it would appear as though the whole transaction failed, but that wouldn't be the case. 
-		// This is a major concern with this approach, and it's something that we need to be aware of if we want to be running this
-		// in production. There are also implementations that go ahead and publish the domain events before calling SaveChangesAsync The reasoning
-		// is then the handling of the domain events becomes part of the overall transaction by EF Core. While this is inherently true, the 
-		// whole concept of an event is something that is a fact. An event is something that has already happened in our system, and publishing
-		// the domain events before actually persiting the original changes that triggered these events makes absolutely no sense. 
-		// Which is why we go ahead and publish our domain events only after persisting these changes in the database. 
-		// But there is a fix OutBox pattern!
-		await PublishDomainEventsAsync();
+			// We are going to await PublishDomainEvents
+			// There are some caveats of this approach to publish domain events.
+			// What we are doing here is potentially problematic. We are saving changes to the database, and okay this is atomic,
+			// and this is either going to succeed or fail, but when we are publishing a set of domain events which is another
+			// transaction altogether. The domain event handlers could be doing all sorts of things like
+			// calling the database or other external services, and the handlers themselves could also fail. 
+			// This is going to cause an exception which is going to fail the SaveChangesAsync method. 
+			// However, the original call to the database was already successfully completed. So in the case of a domain event handler
+			// failure, it would appear as though the whole transaction failed, but that wouldn't be the case. 
+			// This is a major concern with this approach, and it's something that we need to be aware of if we want to be running this
+			// in production. There are also implementations that go ahead and publish the domain events before calling SaveChangesAsync The reasoning
+			// is then the handling of the domain events becomes part of the overall transaction by EF Core. While this is inherently true, the 
+			// whole concept of an event is something that is a fact. An event is something that has already happened in our system, and publishing
+			// the domain events before actually persiting the original changes that triggered these events makes absolutely no sense. 
+			// Which is why we go ahead and publish our domain events only after persisting these changes in the database. 
+			// But there is a fix OutBox pattern!
+			await PublishDomainEventsAsync();
 
-		return result;
+			return result;
+		}
+		catch (DbUpdateConcurrencyException ex)
+		{
+			// We are catching dbUpdateConcurrencyException. This is an exception that is 
+			// thrown by the database when we have a concurrency violation at the database level. 
+			// The reason for creating a custom exception is so that, we don't leak EntityFramework details into our
+			// application layer, we are abstracting EntityFramework behind this custom exception. 
+			// However, we are passing the exception instance as the inner exception so that it's available for logging
+			// and further inspecting. 
+			// So now our database context, which is unit of work, is going to be handling the DbUpdateConcurrencyException
+			// and throwing a concurrency exception instance, which is known to our application project. 
+			throw new ConcurrencyException("Concurrency exception occurred.", ex);
+		}
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
