@@ -12,13 +12,16 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
 		builder.HasKey(user => user.Id);
 
-		builder.Property(user => user.FirstName).HasMaxLength(200)
+		builder.Property(user => user.FirstName)
+		   .HasMaxLength(200)
 		   .HasConversion(firstName => firstName.Value, value => new FirstName(value));
 
-		builder.Property(user => user.LastName).HasMaxLength(200)
-		   .HasConversion(lastName => lastName.Value, value => new LastName(value));
+		builder.Property(user => user.LastName)
+		   .HasMaxLength(200)
+		   .HasConversion(firstName => firstName.Value, value => new LastName(value));
 
-		builder.Property(user => user.Email).HasMaxLength(400)
+		builder.Property(user => user.Email)
+		   .HasMaxLength(400)
 		   .HasConversion(email => email.Value, value => new Domain.Users.Email(value));
 
 		// Defining an index on the email property or rather the email column in the database, and we are

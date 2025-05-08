@@ -10,7 +10,8 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
 	private readonly IPublisher _publisher;
 
 	// Constructor accepts the DBContextOption class, and it is passing it to the BaseClass constructor, accepting this type.
-	public ApplicationDbContext(DbContextOptions options, IPublisher publisher) : base(options)
+	public ApplicationDbContext(DbContextOptions options, IPublisher publisher)
+		: base(options)
 	{
 		_publisher = publisher;
 	}

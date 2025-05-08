@@ -30,6 +30,10 @@ internal sealed class ApartmentConfiguration : IEntityTypeConfiguration<Apartmen
 		   .HasMaxLength(200)
 		   .HasConversion(name => name.Value, value => new Name(value));
 
+		builder.Property(apartment => apartment.Description)
+		   .HasMaxLength(2000)
+		   .HasConversion(description => description.Value, value => new Description(value));
+
 		// For mapping the price and the cleaning fee which are money value objects,
 		// we are also using the owned entity approach with the added step of defining a conversion for the currency which 
 		// contains a code inside, so we are only mapping the currency code to the database. 

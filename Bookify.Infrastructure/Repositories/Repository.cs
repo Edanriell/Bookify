@@ -5,7 +5,8 @@ namespace Bookify.Infrastructure.Repositories;
 
 // We have a generic constraint on our repository class which 
 // requires that the generic type implements the entity base class.
-internal abstract class Repository<T> where T : Entity
+internal abstract class Repository<T>
+	where T : Entity
 {
 	protected readonly ApplicationDbContext DbContext;
 
@@ -19,7 +20,9 @@ internal abstract class Repository<T> where T : Entity
 		Guid id,
 		CancellationToken cancellationToken = default)
 	{
-		return await DbContext.Set<T>().FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
+		return await DbContext
+				  .Set<T>()
+				  .FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
 	}
 
 	// Adds an entity to the database context
