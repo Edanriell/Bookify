@@ -24,7 +24,7 @@ if (app.Environment.IsDevelopment())
 	app.ApplyMigrations();
 
 	// REMARK: Uncomment if you want to seed initial data.
-	// app.SeedData();
+	//	app.SeedData();
 }
 
 app.UseHttpsRedirection();
@@ -35,5 +35,7 @@ app.MapControllers();
 
 app.Run();
 
-// TODO
-// Do Migrations !!
+// IMPORTANT
+// From Bookify root
+// To create a new migration, run the following command:
+// dotnet ef migrations add Create_Database --project .\Bookify.Infrastructure\Bookify.Infrastructure.csproj --startup-project .\Bookify.Api\Bookify.Api.csproj
