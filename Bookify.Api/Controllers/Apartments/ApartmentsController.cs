@@ -31,7 +31,7 @@ public class ApartmentsController : ControllerBase
 		// ISender, and it comes from MediatR
 		var query = new SearchApartmentsQuery(startDate, endDate);
 
-		// Result object that we get back is a result containg a read-only list of aparment responses
+		// Result object that we get back is a result containg a read-only list of apartment responses
 		var result = await _sender.Send(query, cancellationToken);
 
 		// Because this query can never fail, we are going to return Ok, and we are going to return

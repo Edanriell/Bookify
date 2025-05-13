@@ -1,13 +1,13 @@
 ﻿services:
     bookify.api:
-        image: bookify.api
+        image: ${DOCKER_REGISTRY-}bookifyapi
         container_name: Bookify.Api
         build:
             context: .
-            dockerfile: Bookify.Api/Dockerfile
+            dockerfile: src/Bookify.Api/Dockerfile
         depends_on:
             - bookify-db
-    
+         
     bookify-db:
         image: postgres:latest
         container_name: Bookify.Db
@@ -18,6 +18,5 @@
         volumes:
             - ./.containers/database:/var/lib/postgresql/data
         ports:
-            - 5432:5432 
-
+            - 5432:5432
   
