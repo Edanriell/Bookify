@@ -24,4 +24,4 @@ internal sealed class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOp
 	{
 		Configure(options);
 	}
-}
+} 
