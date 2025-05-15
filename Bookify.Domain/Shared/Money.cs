@@ -21,7 +21,7 @@ public record Money(decimal Amount, Currency Currency)
 	{
 		return new Money(0, currency);
 	}
-
+ 
 	public bool IsZero()
 	{
 		return this == Zero(Currency);

@@ -8,4 +8,4 @@ public interface IJwtService
 		string email,
 		string password,
 		CancellationToken cancellationToken = default);
-}
+} 

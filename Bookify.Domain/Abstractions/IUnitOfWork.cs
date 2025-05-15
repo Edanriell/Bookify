@@ -7,4 +7,4 @@ public interface IUnitOfWork
 	// Method SaveChangesAsync takes any changes that are pending in our repositories and persist
 	// it in the database. 
 	Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-}
+} 

@@ -101,7 +101,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
 		// We have domain events extracted, and then we just iterate over them
 		// one by one and call publisherPublish to publish the domain event.
 		// This is going to trigger the respective domain event handlers which we defined in the
-		// application layer.
+		// application layer. 
 		foreach (var domainEvent in domainEvents) await _publisher.Publish(domainEvent);
 	}
 }

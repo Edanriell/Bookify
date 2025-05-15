@@ -17,7 +17,6 @@ internal sealed class GetBookingQueryHandler : IQueryHandler<GetBookingQuery, Bo
 
 	public async Task<Result<BookingResponse>> Handle(GetBookingQuery request, CancellationToken cancellationToken)
 	{
-		// Getting back a database connection object.
 		using var connection = _sqlConnectionFactory.CreateConnection();
 
 		// Our query with the argument BookingId. 

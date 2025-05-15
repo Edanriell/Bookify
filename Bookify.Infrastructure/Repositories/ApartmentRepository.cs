@@ -8,4 +8,4 @@ internal sealed class ApartmentRepository : Repository<Apartment>, IApartmentRep
 		: base(dbContext)
 	{
 	}
-}
+} 

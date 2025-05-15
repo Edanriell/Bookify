@@ -73,8 +73,6 @@ public class ExceptionHandlingMiddleware
 					   "One or more validation errors has occurred",
 					   validationException.Errors),
 				   _ => new ExceptionDetails(
-					   // If it is not validation exception, then we have an internal
-					   // server error and there is nothing we can do. 
 					   StatusCodes.Status500InternalServerError,
 					   "ServerError",
 					   "Server error",

@@ -14,7 +14,11 @@ public record Currency
 	public static readonly Currency Eur = new("EUR");
 
 	// Exposing all currencies in our system
-	public static readonly IReadOnlyCollection<Currency> All = new[] { Usd, Eur };
+	public static readonly IReadOnlyCollection<Currency> All = new[]
+															   {
+																   Usd,
+																   Eur
+															   };
 
 	// Private constructor
 	private Currency(string code)

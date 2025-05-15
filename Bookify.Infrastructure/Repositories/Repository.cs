@@ -24,7 +24,7 @@ internal abstract class Repository<T>
 				  .Set<T>()
 				  .FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
 	}
-
+ 
 	// Adds an entity to the database context
 	public void Add(T entity)
 	{

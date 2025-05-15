@@ -40,4 +40,4 @@ public class ApartmentsController : ControllerBase
 		// the list of apartment responses that is returned by our query. 
 		return Ok(result.Value);
 	}
-}
+} 

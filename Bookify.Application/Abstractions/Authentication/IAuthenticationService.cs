@@ -8,4 +8,4 @@ public interface IAuthenticationService
 		User user,
 		string password,
 		CancellationToken cancellationToken = default);
-}
+}  

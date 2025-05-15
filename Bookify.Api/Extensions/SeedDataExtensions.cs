@@ -1,5 +1,6 @@
 using Bogus;
 using Bookify.Application.Abstractions.Data;
+using Bookify.Domain.Apartments;
 using Dapper;
 
 namespace Bookify.Api.Extensions;
@@ -43,17 +44,17 @@ public static class SeedDataExtensions
 								   PriceCurrency = "USD",
 								   CleaningFeeAmount = faker.Random.Decimal(25, 200),
 								   CleaningFeeCurrency = "USD",
-								   Amenities = new List<int> { 1, 3 }, // Using constants instead of enum values
+								   Amenities = new List<int> { (int)Amenity.Parking, (int)Amenity.MountainView },
 								   LastBookedOn = DateTime.MinValue
 							   });
 
 			Console.WriteLine($"Prepared {apartments.Count} apartments for seeding.");
 
-			const string sql = @"
-            INSERT INTO public.apartments
-            (id, name, description, address_country, address_state, address_zip_code, address_city, address_street, price_amount, price_currency, cleaning_fee_amount, cleaning_fee_currency, amenities, last_booked_on_utc)
-            VALUES(@Id, @Name, @Description, @Country, @State, @ZipCode, @City, @Street, @PriceAmount, @PriceCurrency, @CleaningFeeAmount, @CleaningFeeCurrency, @Amenities, @LastBookedOn);
-        ";
+			const string sql = """
+							   INSERT INTO public.apartments
+							   (id, "name", description, address_country, address_state, address_zip_code, address_city, address_street, price_amount, price_currency, cleaning_fee_amount, cleaning_fee_currency, amenities, last_booked_on_utc)
+							   VALUES(@Id, @Name, @Description, @Country, @State, @ZipCode, @City, @Street, @PriceAmount, @PriceCurrency, @CleaningFeeAmount, @CleaningFeeCurrency, @Amenities, @LastBookedOn);
+							   """;
 
 			var rowsAffected = connection.Execute(sql, apartments);
 			Console.WriteLine($"Successfully seeded {rowsAffected} apartments.");

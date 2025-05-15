@@ -7,6 +7,7 @@ public record DateRange
 	}
 
 	public DateOnly Start { get; init; }
+
 	public DateOnly End { get; init; }
 
 	// Helper property calculates what the length in days of date range is

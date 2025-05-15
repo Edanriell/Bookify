@@ -11,7 +11,6 @@ public interface ICommand<TReponse> : IRequest<Result<TReponse>>, IBaseCommand
 {
 }
 
-// The value behind having a base command interface is that we can apply generic constraints in our pipeline behaviours. 
 public interface IBaseCommand
 {
 }

@@ -10,7 +10,8 @@ namespace Bookify.Domain.Users;
 public sealed class User : Entity
 {
 	// Accepts an Id and passes it to the base class constructor
-	private User(Guid id, FirstName firstName, LastName lastName, Email email) : base(id)
+	private User(Guid id, FirstName firstName, LastName lastName, Email email)
+		: base(id)
 	{
 		FirstName = firstName;
 		LastName = lastName;
@@ -23,7 +24,9 @@ public sealed class User : Entity
 	}
 
 	public FirstName FirstName { get; private set; }
+
 	public LastName LastName { get; private set; }
+
 	public Email Email { get; private set; }
 
 	// We are assigning the initial value of string empty, because value is not set through the constructor.
