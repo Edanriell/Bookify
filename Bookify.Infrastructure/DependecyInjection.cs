@@ -1,3 +1,4 @@
+using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Email;
@@ -12,7 +13,6 @@ using Bookify.Infrastructure.Data;
 using Bookify.Infrastructure.Email;
 using Bookify.Infrastructure.Repositories;
 using Dapper;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
 using AuthenticationService = Microsoft.AspNetCore.Authentication.AuthenticationService;
+using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
 
 namespace Bookify.Infrastructure;
 
@@ -36,32 +37,7 @@ public static class DependencyInjection
 
 		AddPersistence(services, configuration);
 
-		// Configuration for authentication. We are calling addAuthentication method
-		// and we can optionally set up the authentication scheme. We can access the authentication scheme
-		// exposed on the JWTBearerDefaults class and the value of this constant is bearer.
-		// We are also calling the AddJWTBearer method which we can use to set up the JWTBearer options. 
-		// It has a lot of important properties which are used for validating access tokens.
-		services
-		   .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-		   .AddJwtBearer();
-
-		services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
-
-		services.ConfigureOptions<JwtBearerOptionsSetup>();
-
-		services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
-
-		services.AddTransient<AdminAuthorizationDelegatingHandler>();
-
-		services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpClient) =>
-			{
-				// Resolving Keycloak options instance and set the base address
-				// on our HTTP client so that we don't have to configure it on every request. 
-				var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-
-				httpClient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
-			})
-		   .AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
+		AddAuthentication(services, configuration);
 
 		return services;
 	}
@@ -103,5 +79,47 @@ public static class DependencyInjection
 			new SqlConnectionFactory(connectionString));
 
 		SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+	}
+
+	private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
+	{
+		// Configuration for authentication. We are calling addAuthentication method
+		// and we can optionally set up the authentication scheme. We can access the authentication scheme
+		// exposed on the JWTBearerDefaults class and the value of this constant is bearer.
+		// We are also calling the AddJWTBearer method which we can use to set up the JWTBearer options. 
+		// It has a lot of important properties which are used for validating access tokens.
+		services
+		   .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+		   .AddJwtBearer();
+
+		services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
+
+		services.ConfigureOptions<JwtBearerOptionsSetup>();
+
+		services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
+
+		services.AddTransient<AdminAuthorizationDelegatingHandler>();
+
+		services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpClient) =>
+			{
+				// Resolving Keycloak options instance and set the base address
+				// on our HTTP client so that we don't have to configure it on every request. 
+				var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+				httpClient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
+			})
+		   .AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
+
+		// We are registering the JWT service as an HTTP client. And this is a typed
+		// HTTP client implementation, which means that we can inject an HTTP client instance inside of
+		// the JWT service class. 
+		services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
+		{
+			// Resolving Keycloak options instance, so that we can configure the token URL for the
+			// base address of this HTTP client. 
+			var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+			httpClient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
+		});
 	}
 }
