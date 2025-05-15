@@ -6,8 +6,8 @@ using Dapper;
 
 namespace Bookify.Application.Apartments.SearchApartments;
 
-internal sealed class
-	SearchApartmentsQueryHandler : IQueryHandler<SearchApartmentsQuery, IReadOnlyList<ApartmentResponse>>
+internal sealed class SearchApartmentsQueryHandler
+	: IQueryHandler<SearchApartmentsQuery, IReadOnlyList<ApartmentResponse>>
 {
 	private static readonly int[] ActiveBookingStatuses =
 	{
@@ -78,7 +78,8 @@ internal sealed class
 										// We can determine that the address starts from the country column 
 										// so we are telling that to dapper by specifying the split on value to be Country
 										// and what dapper is going to do is it's going to map first part of  properties into one object and second part properties to another object (Apartment and Address). 
-									}, splitOn: "Country");
+									},
+								 splitOn: "Country");
 
 		return apartments.ToList();
 	}

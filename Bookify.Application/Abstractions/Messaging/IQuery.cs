@@ -8,4 +8,4 @@ namespace Bookify.Application.Abstractions.Messaging;
 // Essentially query is going to be a mediator request returning a result of TResponse object.
 public interface IQuery<TResponse> : IRequest<Result<TResponse>>
 {
-}
+} 

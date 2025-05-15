@@ -23,4 +23,4 @@ public static class BookingErrors
 	public static Error AlreadyStarted = new(
 		"Booking.AlreadyStarted",
 		"The booking has already started");
-}
+} 

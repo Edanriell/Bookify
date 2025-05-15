@@ -21,7 +21,7 @@ public class CredentialRepresentationModel
 	public int Period { get; set; }
 
 	public string Salt { get; set; }
-
+ 
 	public bool Temporary { get; set; }
 
 	public string Type { get; set; }

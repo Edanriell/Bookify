@@ -6,4 +6,4 @@ public sealed class ConcurrencyException : Exception
 		: base(message, innerException)
 	{
 	}
-}
+} 

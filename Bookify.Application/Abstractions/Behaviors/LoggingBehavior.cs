@@ -9,7 +9,9 @@ namespace Bookify.Application.Abstractions.Behaviors;
 // We are doing this because, we want to be running logging for our command pipeline. We don't really care about
 // logging our queris, we want our queries to be as fast as possible and return the response to the user straight away,
 // while for commands there is a lot of value in adding some additional information through logging. 
-public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IBaseCommand
+public class LoggingBehavior<TRequest, TResponse>
+	: IPipelineBehavior<TRequest, TResponse>
+	where TRequest : IBaseCommand
 {
 	private readonly ILogger<TRequest> _logger;
 
@@ -18,9 +20,10 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 		_logger = logger;
 	}
 
-	public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
-										CancellationToken cancellationToken
-		)
+	public async Task<TResponse> Handle(
+		TRequest request,
+		RequestHandlerDelegate<TResponse> next,
+		CancellationToken cancellationToken)
 	{
 		// We are using reflection to get the type of the current request, and we are taking the
 		// name of this type, which is going to be our command name. 

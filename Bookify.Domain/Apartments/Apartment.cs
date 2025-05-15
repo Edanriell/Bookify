@@ -21,8 +21,15 @@ public sealed class Apartment : Entity
 	// Constructor accepts as an argument an identifier and
 	// passes it down to the base constructor of the entity abstract class
 	// We must implement this ctor! 
-	public Apartment(Guid id, Name name, Description description, Address address, Money price, Money cleaningFee,
-					 List<Amenity> amenities) : base(id)
+	public Apartment(
+		Guid id,
+		Name name,
+		Description description,
+		Address address,
+		Money price,
+		Money cleaningFee,
+		List<Amenity> amenities)
+		: base(id)
 	{
 		Name = name;
 		Description = description;

@@ -11,7 +11,8 @@ public class PricingService
 
 		// Calculating price for periods length in days effectively multiplying the apartment price by the duration of the stay
 		var priceForPeriod = new Money(
-			apartment.Price.Amount + period.LengthInDays, currency);
+			apartment.Price.Amount * period.LengthInDays,
+			currency);
 
 		// Calculating upcharge for specific amenities that are available on the apartment
 		// The business decided that a garden or a mountain view incur a 5% upcharge
@@ -32,10 +33,11 @@ public class PricingService
 		// upcharge to the  price for the current period by multiplying the percentage points
 		if (percentageUpCharge > 0)
 			amenitiesUpCharge = new Money(
-				priceForPeriod.Amount * percentageUpCharge, currency);
+				priceForPeriod.Amount * percentageUpCharge,
+				currency);
 
 		// Calculating total price starting from zero
-		var totalPrice = Money.Zero();
+		var totalPrice = Money.Zero(currency);
 
 		// Adding price for period
 		totalPrice += priceForPeriod;

@@ -7,7 +7,8 @@ namespace Bookify.Application.Abstractions.Behaviors;
 
 // Pipeline behavior it has a request and response generic argument, and the request 
 // has to be a base command because we only want to be running validation for our commands.
-public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class ValidationBehavior<TRequest, TResponse>
+	: IPipelineBehavior<TRequest, TResponse>
 	where TRequest : IBaseCommand
 {
 	// FluentValidation library exposes the IValidator interface we can inject one or more
@@ -21,8 +22,10 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
 		_validators = validators;
 	}
 
-	public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
-										CancellationToken cancellationToken)
+	public async Task<TResponse> Handle(
+		TRequest request,
+		RequestHandlerDelegate<TResponse> next,
+		CancellationToken cancellationToken)
 	{
 		// We check if we have any validators defined for this type. 
 		// If we don't have any validators, let's just invoke the command handler

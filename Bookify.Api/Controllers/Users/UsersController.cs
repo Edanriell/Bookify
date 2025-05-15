@@ -1,3 +1,4 @@
+using Bookify.Application.Users.GetLoggedInUser;
 using Bookify.Application.Users.LoginUser;
 using Bookify.Application.Users.RegisterUser;
 using MediatR;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bookify.Api.Controllers.Users;
 
 [ApiController]
-[Microsoft.AspNetCore.Components.Route("api/user")]
+[Route("api/users")]
 public class UsersController : ControllerBase
 {
 	// We are injecting the mediator service into our controller, which is called ISender,
@@ -17,6 +18,16 @@ public class UsersController : ControllerBase
 	public UsersController(ISender sender)
 	{
 		_sender = sender;
+	}
+
+	[HttpGet("me")]
+	public async Task<IActionResult> GetLoggedInUser(CancellationToken cancellationToken)
+	{
+		var query = new GetLoggedInUserQuery();
+
+		var result = await _sender.Send(query, cancellationToken);
+
+		return Ok(result.Value);
 	}
 
 	// We are allowing anonymous requests so that anyone can
