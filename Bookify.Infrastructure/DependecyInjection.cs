@@ -6,15 +6,20 @@ using Bookify.Domain.Apartments;
 using Bookify.Domain.Bookings;
 using Bookify.Domain.Users;
 using Bookify.Infrastructure.Authentication;
+using Bookify.Infrastructure.Authentication.Models;
 using Bookify.Infrastructure.Clock;
 using Bookify.Infrastructure.Data;
 using Bookify.Infrastructure.Email;
 using Bookify.Infrastructure.Repositories;
 using Dapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
+using AuthenticationService = Microsoft.AspNetCore.Authentication.AuthenticationService;
 
 namespace Bookify.Infrastructure;
 
@@ -43,6 +48,20 @@ public static class DependencyInjection
 		services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
 
 		services.ConfigureOptions<JwtBearerOptionsSetup>();
+
+		services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
+
+		services.AddTransient<AdminAuthorizationDelegatingHandler>();
+
+		services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpClient) =>
+			{
+				// Resolving Keycloak options instance and set the base address
+				// on our HTTP client so that we don't have to configure it on every request. 
+				var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+				httpClient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
+			})
+		   .AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
 
 		return services;
 	}
