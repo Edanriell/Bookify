@@ -1,4 +1,4 @@
-namespace Bookify.Domain.Apartments;
+namespace Bookify.Domain.Shared;
 
 // Amount and currency essentially represent money, and this is a great candidate to introduce a value object
 // because money is an important concept of the apartment booking domain.

@@ -1,6 +1,4 @@
-using Bookify.Application.Abstractions.Behaviors;
-
-namespace Bookify.Application.Abstractions.Exceptions;
+namespace Bookify.Application.Exceptions;
 
 public sealed class ValidationException : Exception
 {
@@ -10,4 +8,4 @@ public sealed class ValidationException : Exception
 	}
 
 	public IEnumerable<ValidationError> Errors { get; }
-} 
+}

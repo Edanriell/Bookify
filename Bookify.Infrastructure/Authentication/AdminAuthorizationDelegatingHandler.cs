@@ -1,9 +1,10 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Bookify.Infrastructure.Authentication.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 
-namespace Bookify.Infrastructure.Authentication.Models;
+namespace Bookify.Infrastructure.Authentication;
 
 // Delegating handler is essentially just a wrapper around our HTTP request.
 // It is a similar concept to middlewares in our API only this is wrapping
@@ -66,7 +67,7 @@ public sealed class AdminAuthorizationDelegatingHandler : DelegatingHandler
 		var authorizationResponse = await base.SendAsync(authorizationRequest, cancellationToken);
 
 		authorizationResponse.EnsureSuccessStatusCode();
- 
+
 		return await authorizationResponse.Content.ReadFromJsonAsync<AuthorizationToken>() ??
 			   throw new ApplicationException();
 	}
