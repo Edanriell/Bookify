@@ -3,7 +3,7 @@ using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Users;
 
-namespace Bookify.Application.Users.LoginUser;
+namespace Bookify.Application.Users.LogInUser;
 
 // Command is using an IJwtService, which is responsible for sending our credentials
 // to the KeyCloak Api and obtaining an access token that we are going to return from our command handler.

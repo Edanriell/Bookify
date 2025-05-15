@@ -2,7 +2,7 @@ using Bookify.Application.Apartments.SearchApartments;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+  
 namespace Bookify.Api.Controllers.Apartments;
 
 // Particular attribute tells .NET runtime that this is supposed to be a controller

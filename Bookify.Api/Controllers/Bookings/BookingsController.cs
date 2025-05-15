@@ -3,7 +3,7 @@ using Bookify.Application.Bookings.ReserveBooking;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+ 
 namespace Bookify.Api.Controllers.Bookings;
 
 [Authorize]

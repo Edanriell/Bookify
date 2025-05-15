@@ -1,8 +1,9 @@
-using Bookify.Api.Controllers.Reviews;
 using Bookify.Application.Reviews.AddReview;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
+namespace Bookify.Api.Controllers.Reviews;
 
 [Authorize]
 [ApiController]
