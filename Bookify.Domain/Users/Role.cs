@@ -21,4 +21,8 @@ public sealed class Role
 
 	// Navigation property, which points to the users that have this role
 	public ICollection<User> Users { get; init; } = new List<User>();
+
+	// Permission-based Authorization
+	// Permissions navigation property
+	public ICollection<Permission> Permissions { get; init; } = new List<Permission>();
 }
