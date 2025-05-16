@@ -21,6 +21,15 @@ public class UsersController : ControllerBase
 	}
 
 	[HttpGet("me")]
+	// Role-based Authorization
+	// We use authorize attribute to specify the role that we require authenticated users to have
+	// to be able to call this endpoint. Otherwise they are going to get the
+	// forbidden response telling them that they do not have the required access. 
+	// IMPORTANT! ASP.NET Core uses a specific claim on the JSON Web Token to determine if the
+	// user has this claim. We need to set it manually! ASP.NET Core has support for modifying a users
+	// claims we can do this through the IClaimsTransformation interface.  
+//	[Authorize(Roles = "Registered")]
+	[Authorize(Roles = Roles.Registered)]
 	public async Task<IActionResult> GetLoggedInUser(CancellationToken cancellationToken)
 	{
 		var query = new GetLoggedInUserQuery();
