@@ -24,9 +24,20 @@ internal abstract class Repository<T>
 				  .Set<T>()
 				  .FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
 	}
- 
+
 	// Adds an entity to the database context
-	public void Add(T entity)
+//	public void Add(T entity)
+//	{
+//		DbContext.Add(entity);
+//	}
+
+	// Role-based Authorization
+	// If we know how EF Core works under the hood
+	// we might realize that we have a slight problem with how EF Core treats
+	// existing objects acting as entities, in this case registered role.
+	// EF Core will attempt to insert this role into the database which is going to
+	// cause a duplicate key exception. 
+	public virtual void Add(T entity)
 	{
 		DbContext.Add(entity);
 	}

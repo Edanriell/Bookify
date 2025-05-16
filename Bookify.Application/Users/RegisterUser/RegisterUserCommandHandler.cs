@@ -28,6 +28,7 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
 		// We are creating a new user by calling the user
 		// create method. We are passing in our first name, last name and email to the value
 		// object constructors, which are required to satisfy the create method. 
+		// Static factory method
 		var user = User.Create(
 			new FirstName(request.FirstName),
 			new LastName(request.LastName),
