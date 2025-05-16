@@ -1,18 +1,25 @@
+using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Abstractions;
+using Bookify.Domain.Bookings;
 using Dapper;
 
 namespace Bookify.Application.Bookings.GetBooking;
 
-// GetBookingQuery is the query argument and BookingResponse is the result by returning this query. 
+// GetBookingQuery is the query argument, and BookingResponse is the result by returning this query. 
 internal sealed class GetBookingQueryHandler : IQueryHandler<GetBookingQuery, BookingResponse>
 {
 	private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-	public GetBookingQueryHandler(ISqlConnectionFactory sqlConnectionFactory)
+	// Resource-based Authorization
+	private readonly IUserContext _userContext;
+
+	public GetBookingQueryHandler(ISqlConnectionFactory sqlConnectionFactory, IUserContext userContext)
 	{
 		_sqlConnectionFactory = sqlConnectionFactory;
+		// Resource-based Authorization
+		_userContext = userContext;
 	}
 
 	public async Task<Result<BookingResponse>> Handle(GetBookingQuery request, CancellationToken cancellationToken)
@@ -56,7 +63,7 @@ internal sealed class GetBookingQueryHandler : IQueryHandler<GetBookingQuery, Bo
 						   WHERE id = @BookingId
 						   """;
 
-		// Executing query with dapper 
+		// Executing a query with dapper 
 		var booking = await connection.QueryFirstOrDefaultAsync<BookingResponse>(
 						  sql,
 						  // Anonymous object contains parameters for query which is the BookingId
@@ -65,6 +72,12 @@ internal sealed class GetBookingQueryHandler : IQueryHandler<GetBookingQuery, Bo
 						  {
 							  request.BookingId
 						  });
+
+		// Resource-based Authorization
+		// Through userContext we get the current user 
+		// If current user id is not matching user id which created a booking, we return 404
+		if (booking is null || booking.UserId != _userContext.UserId)
+			return Result.Failure<BookingResponse>(BookingErrors.NotFound);
 
 		//  returning a booking object
 		return booking;
