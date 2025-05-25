@@ -6,7 +6,7 @@ namespace Bookify.Api.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
-	public static void ApplyMigrations(this IApplicationBuilder app)
+	public static void ApplyMigrations ( this IApplicationBuilder app )
 	{
 		// This method is used only for local development purposes to take the application builder
 		// and create a scope, use this scope to resolve my database context and then apply
@@ -17,9 +17,16 @@ public static class ApplicationBuilderExtensions
 
 		dbContext.Database.Migrate();
 	}
- 
-	public static void UseCustomExceptionHandler(this IApplicationBuilder app)
+
+	public static void UseCustomExceptionHandler ( this IApplicationBuilder app )
 	{
 		app.UseMiddleware<ExceptionHandlingMiddleware>();
+	}
+
+	public static IApplicationBuilder UseRequestContextLogging ( this IApplicationBuilder app )
+	{
+		app.UseMiddleware<RequestContextLoggingMiddleware>();
+
+		return app;
 	}
 }
