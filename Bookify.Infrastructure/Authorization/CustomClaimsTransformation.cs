@@ -12,14 +12,11 @@ internal sealed class CustomClaimsTransformation : IClaimsTransformation
 	// Is used to create a service scope
 	private readonly IServiceProvider _serviceProvider;
 
-	public CustomClaimsTransformation(IServiceProvider serviceProvider)
-	{
-		_serviceProvider = serviceProvider;
-	}
+	public CustomClaimsTransformation ( IServiceProvider serviceProvider ) { _serviceProvider = serviceProvider; }
 
 	// This method is giving us an access to the claims principe which allows us to add more 
 	// claims to this claims principle object. 
-	public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+	public async Task<ClaimsPrincipal> TransformAsync ( ClaimsPrincipal principal )
 	{
 		// We are checking if our claims principle already contains the claims that we will be looking for. 
 		// So we say that principle has claim and then we are going to look for a claim where
@@ -32,8 +29,12 @@ internal sealed class CustomClaimsTransformation : IClaimsTransformation
 		// return the principle object and leave this method. The reason why we are looking for subclaim is because
 		// ASP.NET is going to transform the incoming subclaim on our JSON Web Token into the name identifier claim.
 		// So the subclaim itself will not exist anymore. 
-		if (principal.HasClaim(claim => claim.Type == ClaimTypes.Role) &&
-			principal.HasClaim(claim => claim.Type == JwtRegisteredClaimNames.Sub))
+		if ( principal.HasClaim (
+					 match : claim => claim.Type == ClaimTypes.Role
+				 )
+		  && principal.HasClaim (
+					 match : claim => claim.Type == JwtRegisteredClaimNames.Sub
+				 ) )
 			return principal;
 
 		// We are creating a new scope
@@ -46,18 +47,33 @@ internal sealed class CustomClaimsTransformation : IClaimsTransformation
 		var identityId = principal.GetIdentityId();
 
 		// Obtaining user roles
-		var userRoles = await authorizationService.GetRolesForUserAsync(identityId);
+		var userRoles = await authorizationService.GetRolesForUserAsync (
+								identityId : identityId
+							);
 
-		// Creating new ClaimsIdentity instance
+		// Creating a new ClaimsIdentity instance
 		var claimsIdentity = new ClaimsIdentity();
 
 		// Adding claims
-		claimsIdentity.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, userRoles.Id.ToString()));
+		claimsIdentity.AddClaim (
+				claim : new Claim (
+						type : JwtRegisteredClaimNames.Sub,
+						value : userRoles.Id.ToString()
+					)
+			);
 
-		foreach (var role in userRoles.Roles) claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role.Name));
+		foreach ( var role in userRoles.Roles )
+			claimsIdentity.AddClaim (
+					claim : new Claim (
+							type : ClaimTypes.Role,
+							value : role.Name
+						)
+				);
 
 		// Accessing original claims principle and adding new identity
-		principal.AddIdentity(claimsIdentity);
+		principal.AddIdentity (
+				identity : claimsIdentity
+			);
 
 		return principal;
 	}
