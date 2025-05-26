@@ -59,6 +59,12 @@ public static class DependencyInjection
 				configuration : configuration
 			);
 
+		// Registering all health checks with dependency injection.
+		AddHealthChecks (
+				services : services,
+				configuration : configuration
+			);
+
 		return services;
 	}
 
@@ -219,5 +225,37 @@ public static class DependencyInjection
 
 		// Configuring cache service as a singleton implementation of the ICacheService interface. 
 		services.AddSingleton<ICacheService, CacheService>();
+	}
+
+	// HealthChecks are useful because we can set up monitoring support on our healthcheck endpoint.
+	// Most cloud providers allow us to configure an endpoint that is going to be 
+	// monitored every few seconds or every few minutes, and as long as this endpoint 
+	// returns a 200 OK response, nothing bad is going to happen. But if we get a 503 service
+	// unavailable, meaning that our API isn't able to function as expected, then we can configure
+	// what is going to happen. For example, we can figure out that our database isn't running, and
+	// we can restart it. We can determine that our API is completely unavailable, and it is time to implement
+	// a failover scenario where we can configure the cloud provider to spin up a new application instance and 
+	// terminate the old one. And we can also plug in some alerting where we can start getting email or
+	// Slack notifications when a health check fails. 
+	private static void AddHealthChecks ( IServiceCollection services, IConfiguration configuration )
+	{
+		services.AddHealthChecks().
+			AddNpgSql (
+					connectionString : configuration.GetConnectionString (
+							name : "Database"
+						)!
+				).
+			AddRedis (
+					redisConnectionString : configuration.GetConnectionString (
+							name : "Cache"
+						)!
+				).
+			AddUrlGroup (
+					uri : new Uri (
+							uriString : configuration[key : "KeyCloak:BaseUrl"]!
+						),
+					httpMethod : HttpMethod.Get,
+					name : "keycloak"
+				);
 	}
 }

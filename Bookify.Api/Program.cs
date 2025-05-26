@@ -1,6 +1,8 @@
 using Bookify.Api.Extensions;
 using Bookify.Application;
 using Bookify.Infrastructure;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder (
@@ -34,6 +36,14 @@ builder.Services.AddInfrastructure (
 		configuration : builder.Configuration
 	);
 
+// Health checks are an automated way for us to know what is the health of our system.
+// This can include our API itself and also any external components that we might be using. 
+// For example, we are using PostgreSQL database, a Redis cache and Keycloak as an external identity provider.
+// builder.Services.AddHealthChecks().
+//	AddCheck<CustomSqlHealthCheck> (
+//			name : "custom-sql"
+//		);
+
 var app = builder.Build();
 
 if ( app.Environment.IsDevelopment() )
@@ -64,6 +74,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseHealthChecks (
+		path : "health",
+		options : new HealthCheckOptions
+				  {
+					  ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+				  }
+	);
+
 app.Run();
 
 // IMPORTANT
@@ -71,3 +89,31 @@ app.Run();
 // To create a new migration, run the following command:
 // dotnet ef migrations add Create_Database --project .\Bookify.Infrastructure\Bookify.Infrastructure.csproj
 // --startup-project .\Bookify.Api\Bookify.Api.csproj
+
+// Custom health check
+// public class CustomSqlHealthCheck ( ISqlConnectionFactory sqlConnectionFactory ) : IHealthCheck
+// {
+//	public async Task<HealthCheckResult> CheckHealthAsync ( HealthCheckContext context,
+//															CancellationToken cancellationToken
+//																= default(CancellationToken) )
+//	{
+// // Database can fail so we are using try catch 
+//		try
+//		{
+// // We are using using statement to properly dispose of any resources. 
+//			using var connection = sqlConnectionFactory.CreateConnection();
+// 
+//			await connection.ExecuteScalarAsync (
+//					sql : "SELECT 1;"
+//				);
+// 
+//			return HealthCheckResult.Healthy();
+//		}
+//		catch ( Exception e )
+//		{
+//			return HealthCheckResult.Unhealthy (
+//					exception : e
+//				);
+//		}
+//	}
+// }
