@@ -1,6 +1,1 @@
-HEADERnamespace a;
-
-public class Usings
-{
-	
-}
+global using Xunit;
