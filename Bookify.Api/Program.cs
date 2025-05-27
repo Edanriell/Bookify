@@ -99,6 +99,29 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Minimal Api
+// var apiVersionSet = app.NewApiVersionSet().
+//	HasApiVersion (
+//			apiVersion : new ApiVersion (
+//					majorVersion : 1
+//				)
+//		).
+//	ReportApiVersions().
+//	Build();
+
+// Minimal Api
+// var routeGroupBuilder = app.MapGroup (
+//			prefix : "api/v{version:apiVersion}"
+//		).
+//	WithApiVersionSet (
+//			apiVersionSet : apiVersionSet
+//		);
+// 
+// routeGroupBuilder.MapBookingsEndpoints();
+
+// Minimal Api
+// app.MapBookingsEndpoints();
+
 app.UseHealthChecks (
 		path : "/health",
 		options : new HealthCheckOptions
