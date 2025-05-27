@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Caching;
 using Bookify.Application.Abstractions.Clock;
@@ -63,6 +64,10 @@ public static class DependencyInjection
 		AddHealthChecks (
 				services : services,
 				configuration : configuration
+			);
+
+		AddApiVersioning (
+				services : services
 			);
 
 		return services;
@@ -256,6 +261,67 @@ public static class DependencyInjection
 						),
 					httpMethod : HttpMethod.Get,
 					name : "keycloak"
+				);
+	}
+
+	// Api versioning is the process of managing and tracking changes to our api. This also involves
+	// communicating changes about our API to our API consumers, and if there is one constant with API development
+	// is that we can't avoid changes to our API.
+	// There is 3 types of api versioning. Query parameter versioning, where we specify the API version as query
+	// parameter
+	// in our URL. Header API versioning, where we pass the API version using a custom request header. URL versioning
+	// where the API version is part of the actual route. URL versioning is also the most popular approach to API
+	// versioning.
+	// We should version API as soon as we make a breaking change. What constitutes a breaking change should
+	// be an agreement that we make as a team, for example. Any changes to the behaviour of our API constitute a
+	// breaking change.
+	// Adding or removing API endpoints is a breaking change. Changing the request parameters without default values or
+	// adding
+	// or removing fields to the API response could also be a breaking change. Some of these API changes will break our
+	// API
+	// consumers, and they are definitely dangerous. 
+	private static void AddApiVersioning ( IServiceCollection services )
+	{
+		services.AddApiVersioning (
+					setupAction : options =>
+					{
+						// Setting the default API version to 1. This is a sensible default value if we
+						// are just introducing API versioning to our solution.
+						options.DefaultApiVersion = new ApiVersion (
+								majorVersion : 1
+							);
+						// Attaching an HTTP header called API supported versions
+						// that is going to return the API version supported by the current 
+						// endpoint.It is also going to add the API deprecated versions response header
+						// reporting the deprecated API versions.
+						options.ReportApiVersions = true;
+						// This actually determines what kind of API versioning we want to be using. We pass in
+						// UrlSegmentApiVersionReader because we want to implement URL versioning.
+						// 
+						options.ApiVersionReader = new UrlSegmentApiVersionReader();
+						// Header API versioning is also supported. We are going to use the HeaderApiVersionReader
+						// Passing in as argument the name of the header that we are going to use.
+//						options.ApiVersionReader = new HeaderApiVersionReader("X-Version-Id");
+						// Query version is also supported. We are going to use the QueryStringApiVersionReader
+//						options.ApiVersionReader = new QueryStringApiVersionReader();
+						// Api version reader also supports multiple types of API versioning
+//						options.ApiVersionReader = ApiVersionReader.Combine (
+//								apiVersionReader : new HeaderApiVersionReader(),
+//								new UrlSegmentApiVersionReader()
+//							);
+					}
+				).
+			AddMvc().
+			// Allows us to configure api explorer options
+			AddApiExplorer (
+					setupAction : options =>
+					{
+						// Lowercacse v matches in route v 
+						// and uppercase V is {version:apiVersion}
+						options.GroupNameFormat = "'v'V";
+						// In swagger, we will se a version of endpoint as {version:apiVersion}
+						options.SubstituteApiVersionInUrl = true;
+					}
 				);
 	}
 }

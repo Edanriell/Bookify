@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Bookify.Application.Reviews.AddReview;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -5,26 +6,40 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.Api.Controllers.Reviews;
 
-[Authorize]
-[ApiController]
-[Route("api/reviews")]
+[ Authorize ]
+[ ApiController ]
+[ ApiVersion (
+		version : ApiVersions.V1
+	) ]
+[ Route (
+		template : "api/v{version:apiVersion}/reviews"
+	) ]
 public class ReviewsController : ControllerBase
 {
 	private readonly ISender _sender;
 
-	public ReviewsController(ISender sender)
+	public ReviewsController ( ISender sender ) { _sender = sender; }
+
+	[ HttpPost ]
+	public async Task<IActionResult> AddReview ( AddReviewRequest request, CancellationToken cancellationToken )
 	{
-		_sender = sender;
-	}
+		var command = new AddReviewCommand (
+				BookingId : request.BookingId,
+				Rating : request.Rating,
+				Comment : request.Comment
+			);
 
-	[HttpPost]
-	public async Task<IActionResult> AddReview(AddReviewRequest request, CancellationToken cancellationToken)
-	{
-		var command = new AddReviewCommand(request.BookingId, request.Rating, request.Comment);
+		var result = await _sender.Send (
+							 request : command,
+							 cancellationToken : cancellationToken
+						 );
 
-		var result = await _sender.Send(command, cancellationToken);
-
-		if (result.IsFailure) return BadRequest(result.Error);
+		if ( result.IsFailure )
+		{
+			return BadRequest (
+					error : result.Error
+				);
+		}
 
 		return Ok();
 	}
