@@ -15,6 +15,7 @@ using Bookify.Infrastructure.Caching;
 using Bookify.Infrastructure.Clock;
 using Bookify.Infrastructure.Data;
 using Bookify.Infrastructure.Email;
+using Bookify.Infrastructure.Outbox;
 using Bookify.Infrastructure.Repositories;
 using Dapper;
 using Microsoft.AspNetCore.Authentication;
@@ -24,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Quartz;
 using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
 using AuthenticationService = Bookify.Infrastructure.Authentication.AuthenticationService;
 using IAuthenticationService = Bookify.Application.Abstractions.Authentication.IAuthenticationService;
@@ -68,6 +70,12 @@ public static class DependencyInjection
 
 		AddApiVersioning (
 				services : services
+			);
+
+		// Transactional Outbox Pattern
+		AddBackgroundJobs (
+				services : services,
+				configuration : configuration
 			);
 
 		return services;
@@ -323,5 +331,25 @@ public static class DependencyInjection
 						options.SubstituteApiVersionInUrl = true;
 					}
 				);
+	}
+
+	// Transactional Outbox Pattern
+	private static void AddBackgroundJobs ( IServiceCollection services, IConfiguration configuration )
+	{
+		// Mapping an outbox section to class OutboxOptions.
+		services.Configure<OutboxOptions> (
+				config : configuration.GetSection (
+						key : "Outbox"
+					)
+			);
+
+		services.AddQuartz();
+
+		// Waiting for jobs to complete when the application is shutting down. 
+		services.AddQuartzHostedService (
+				configure : options => options.WaitForJobsToComplete = true
+			);
+
+		services.ConfigureOptions<ProcessOutboxMessagesJobSetup>();
 	}
 }
