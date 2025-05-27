@@ -1,4 +1,5 @@
 using Bookify.Api.Extensions;
+using Bookify.Api.OpenApi;
 using Bookify.Application;
 using Bookify.Infrastructure;
 using HealthChecks.UI.Client;
@@ -44,12 +45,36 @@ builder.Services.AddInfrastructure (
 //			name : "custom-sql"
 //		);
 
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
+
 var app = builder.Build();
 
 if ( app.Environment.IsDevelopment() )
 {
 	app.UseSwagger();
-	app.UseSwaggerUI();
+	app.UseSwaggerUI (
+			setupAction : options =>
+			{
+				// Passing a delegate for the Swagger UI options so that we call
+				// some methods in this class, and we are using
+				// the webapplication here to call the DescribeApiVersions method, which is going to 
+				// return a collection of API version descriptions. 
+				var descriptions = app.DescribeApiVersions();
+
+				// Then we iterate over this collection and create the URL for our API version
+				// and the API version name, and we are going to call the Swagger endpoint method
+				// to configure the path to the respective Swagger JSON document.
+				foreach ( var description in descriptions )
+				{
+					var url = $"/swagger/{description.GroupName}/swagger.json";
+					var name = description.GroupName.ToUpperInvariant();
+					options.SwaggerEndpoint (
+							url : url,
+							name : name
+						);
+				}
+			}
+		);
 
 	app.ApplyMigrations();
 
@@ -75,7 +100,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseHealthChecks (
-		path : "health",
+		path : "/health",
 		options : new HealthCheckOptions
 				  {
 					  ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Bookify.Application.Users.GetLoggedInUser;
 using Bookify.Application.Users.LogInUser;
 using Bookify.Application.Users.RegisterUser;
@@ -8,20 +9,43 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.Api.Controllers.Users;
 
-[ApiController]
-[Route("api/users")]
+[ ApiController ]
+// [Route("api/users")]
+// Api URL versioning
+// [ ApiVersion (
+//		version : 1
+//	) ]
+// [ ApiVersion (
+//		version : 2
+//	) ]
+// [ ApiVersion (
+//		version : ApiVersions.V1,
+//		Deprecated = true
+//	) ]
+// [ ApiVersion (
+//		version : ApiVersions.V2
+//	) ]
+[ ApiVersion (
+		version : ApiVersions.V1
+	) ]
+[ Route (
+		template : "api/v{version:apiVersion}/users"
+	) ]
 public class UsersController : ControllerBase
 {
 	// We are injecting the mediator service into our controller, which is called ISender,
 	// and it comes from MediatR it used to send our commands or queries from this controller.
 	private readonly ISender _sender;
 
-	public UsersController(ISender sender)
-	{
-		_sender = sender;
-	}
+	public UsersController ( ISender sender ) { _sender = sender; }
 
-	[HttpGet("me")]
+
+	[ HttpGet (
+			template : "me"
+		) ]
+//	[ MapToApiVersion (
+//			version : ApiVersions.V1
+//		) ]
 	// Role-based Authorization
 	// We use authorize attribute to specify the role that we require authenticated users to have
 	// to be able to call this endpoint. Otherwise they are going to get the
@@ -46,54 +70,110 @@ public class UsersController : ControllerBase
 	// IMPORTANT! If we want we can have role based and permission based authorization, but thus doesent really
 	// make sense because the permissions are connected to the roles, so we can just leave out the roles and only
 	// rely on permission based authorization. 
-	[HasPermission(Permissions.UsersRead)]
-	public async Task<IActionResult> GetLoggedInUser(CancellationToken cancellationToken)
+	[ HasPermission (
+			permission : Permissions.UsersRead
+		) ]
+	public async Task<IActionResult> GetLoggedInUser ( CancellationToken cancellationToken )
 	{
 		var query = new GetLoggedInUserQuery();
 
-		var result = await _sender.Send(query, cancellationToken);
+		var result = await _sender.Send (
+							 request : query,
+							 cancellationToken : cancellationToken
+						 );
 
-		return Ok(result.Value);
+		return Ok (
+				value : result.Value
+			);
 	}
+
+//	[ HttpGet (
+//			template : "me"
+//		) ]
+//	[ MapToApiVersion (
+//			version : ApiVersions.V2
+//		) ]
+//	[ HasPermission (
+//			permission : Permissions.UsersRead
+//		) ]
+//	public async Task<IActionResult> GetLoggedInUserV2 ( CancellationToken cancellationToken )
+//	{
+//		var query = new GetLoggedInUserQuery();
+// 
+//		var result = await _sender.Send (
+//							 request : query,
+//							 cancellationToken : cancellationToken
+//						 );
+// 
+//		return Ok (
+//				value : result.Value
+//			);
+//	}
 
 	// We are allowing anonymous requests so that anyone can
 	// register to the system and it's going to accept
 	// a register user request in the request body. 
-	[AllowAnonymous]
-	[HttpPost("register")]
-	public async Task<IActionResult> Register(
-		RegisterUserRequest request,
-		CancellationToken cancellationToken)
+	[ AllowAnonymous ]
+	[ HttpPost (
+			template : "register"
+		) ]
+	public async Task<IActionResult> Register ( RegisterUserRequest request,
+												CancellationToken cancellationToken )
 	{
 		// In our body of the endpoint, we are mapping our request into the command.
-		var command = new RegisterUserCommand(
-			request.Email,
-			request.FirstName,
-			request.LastName,
-			request.Password);
+		var command = new RegisterUserCommand (
+				Email : request.Email,
+				FirstName : request.FirstName,
+				LastName : request.LastName,
+				Password : request.Password
+			);
 
 		// We are sending the command and returning
-		var result = await _sender.Send(command, cancellationToken);
+		var result = await _sender.Send (
+							 request : command,
+							 cancellationToken : cancellationToken
+						 );
 
 		// If the result is a failure, we want to return a 400 bad request containing the error. 
-		if (result.IsFailure) return BadRequest(result.Error);
+		if ( result.IsFailure )
+		{
+			return BadRequest (
+					error : result.Error
+				);
+		}
 
 		// An okay response from the route.
-		return Ok(result.Value);
+		return Ok (
+				value : result.Value
+			);
 	}
 
-	[AllowAnonymous]
-	[HttpPost("login")]
-	public async Task<IActionResult> LogIn(
-		LogInUserRequest request,
-		CancellationToken cancellationToken)
+	[ AllowAnonymous ]
+	[ HttpPost (
+			template : "login"
+		) ]
+	public async Task<IActionResult> LogIn ( LogInUserRequest request,
+											 CancellationToken cancellationToken )
 	{
-		var command = new LogInUserCommand(request.Email, request.Password);
+		var command = new LogInUserCommand (
+				Email : request.Email,
+				Password : request.Password
+			);
 
-		var result = await _sender.Send(command, cancellationToken);
+		var result = await _sender.Send (
+							 request : command,
+							 cancellationToken : cancellationToken
+						 );
 
-		if (result.IsFailure) return Unauthorized(result.Error);
+		if ( result.IsFailure )
+		{
+			return Unauthorized (
+					value : result.Error
+				);
+		}
 
-		return Ok(result.Value);
+		return Ok (
+				value : result.Value
+			);
 	}
 }
