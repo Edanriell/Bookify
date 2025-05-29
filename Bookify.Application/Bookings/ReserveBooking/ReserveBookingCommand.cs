@@ -2,10 +2,7 @@ using Bookify.Application.Abstractions.Messaging;
 
 namespace Bookify.Application.Bookings.ReserveBooking;
 
-// ICommand interface must be implemented to be it a command.
-// Guid is the return type that represents the newly created booking.
-public record ReserveBookingCommand(
-	Guid ApartmentId,
-	Guid UserId,
-	DateOnly StartDate,
-	DateOnly EndDate) : ICommand<Guid>; 
+public sealed record ReserveBookingCommand ( Guid ApartmentId,
+											 Guid UserId,
+											 DateOnly StartDate,
+											 DateOnly EndDate ) : ICommand<Guid>;

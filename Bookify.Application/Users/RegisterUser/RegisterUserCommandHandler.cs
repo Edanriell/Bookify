@@ -11,43 +11,47 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IUserRepository _userRepository;
 
-	public RegisterUserCommandHandler(
-		IAuthenticationService authenticationService,
-		IUserRepository userRepository,
-		IUnitOfWork unitOfWork)
+	public RegisterUserCommandHandler ( IAuthenticationService authenticationService,
+										IUserRepository userRepository,
+										IUnitOfWork unitOfWork )
 	{
 		_authenticationService = authenticationService;
 		_userRepository = userRepository;
 		_unitOfWork = unitOfWork;
 	}
 
-	public async Task<Result<Guid>> Handle(
-		RegisterUserCommand request,
-		CancellationToken cancellationToken)
+	public async Task<Result<Guid>> Handle ( RegisterUserCommand request,
+											 CancellationToken cancellationToken )
 	{
-		// We are creating a new user by calling the user
-		// create method. We are passing in our first name, last name and email to the value
-		// object constructors, which are required to satisfy the create method. 
-		// Static factory method
-		var user = User.Create(
-			new FirstName(request.FirstName),
-			new LastName(request.LastName),
-			new Email(request.Email));
+		var user = User.Create (
+				firstName : new FirstName (
+						Value : request.FirstName
+					),
+				lastName : new LastName (
+						Value : request.LastName
+					),
+				email : new Email (
+						Value : request.Email
+					)
+			);
 
-		// Then we are calling the authentication service, which is
-		// going to register our user with key cloak, and it is going to give
-		// us back the identity ID, which we are going to set on the user
-		var identityId = await _authenticationService.RegisterAsync(
-							 user,
-							 request.Password,
-							 cancellationToken);
+		var identityId = await _authenticationService.RegisterAsync (
+								 user : user,
+								 password : request.Password,
+								 cancellationToken : cancellationToken
+							 );
 
-		// entity before persisting it in the database. 
-		user.SetIdentityId(identityId);
+		user.SetIdentityId (
+				identityId : identityId
+			);
 
-		_userRepository.Add(user);
+		_userRepository.Add (
+				user : user
+			);
 
-		await _unitOfWork.SaveChangesAsync();
+		await _unitOfWork.SaveChangesAsync (
+				cancellationToken : cancellationToken
+			);
 
 		return user.Id;
 	}

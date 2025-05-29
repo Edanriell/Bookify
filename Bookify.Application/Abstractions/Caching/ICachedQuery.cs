@@ -8,5 +8,6 @@ public interface ICachedQuery <TResponse> : IQuery<TResponse>,
 public interface ICachedQuery
 {
 	string CacheKey { get; }
+
 	TimeSpan? Expiration { get; }
 }

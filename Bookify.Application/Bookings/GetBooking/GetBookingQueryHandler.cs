@@ -7,41 +7,21 @@ using Dapper;
 
 namespace Bookify.Application.Bookings.GetBooking;
 
-// GetBookingQuery is the query argument, and BookingResponse is the result by returning this query. 
 internal sealed class GetBookingQueryHandler : IQueryHandler<GetBookingQuery, BookingResponse>
 {
 	private readonly ISqlConnectionFactory _sqlConnectionFactory;
-
-	// Resource-based Authorization
 	private readonly IUserContext _userContext;
 
-	public GetBookingQueryHandler(ISqlConnectionFactory sqlConnectionFactory, IUserContext userContext)
+	public GetBookingQueryHandler ( ISqlConnectionFactory sqlConnectionFactory, IUserContext userContext )
 	{
 		_sqlConnectionFactory = sqlConnectionFactory;
-		// Resource-based Authorization
 		_userContext = userContext;
 	}
 
-	public async Task<Result<BookingResponse>> Handle(GetBookingQuery request, CancellationToken cancellationToken)
+	public async Task<Result<BookingResponse>> Handle ( GetBookingQuery request, CancellationToken cancellationToken )
 	{
 		using var connection = _sqlConnectionFactory.CreateConnection();
 
-		// Our query with the argument BookingId. 
-		// This is considered to be a pragmatic solution because we are using SQL
-		// to directly access our read model and the response from our query without any indirection. 
-		// The downside is that we are not completely abstracting our persistence concerns, in this case, a SQL database
-		// from our query handlers, but the benefits are just too many to count. 
-		// First of all, this is very simple. All we need is to create a database connection, write our SQL statement and
-		// execute the query with dapper, which is a few lines of code. Then this is going to be really performant because dapper
-		// is one of the fastest object mappers out there, and there is also the benefit of being able to define our read models
-		// at the database level by defining database views. This is something that our SQL developer can take care of, and we just consume
-		// the views without having to write very complicated queries in our code. The standard argument of not being able to switch a database
-		// without an abstraction really doesn't make a lot of sense because first of all, if we are switching databases, we have a lot more
-		// problems than just using SQL in the application layer. Second, if we end up moving from an SQL database to something like a document
-		// database or a column store, we are going to have to rewrite our entire persistence layer, so an abstraction wouldn't really save us here
-		// and lastly, if we do decide to introduce an abstraction to just wrap all of the code of our query and more (code below), then query handlers become pointless.
-		// They would just be wrappers around the query service that is delegating all of the work to the infrastructure project, for example. 
-		// But the query handlers themselves wouldn't have any added value, so at that point we could consider getting rid of the query handlers altogether. 
 		const string sql = """
 						   SELECT
 						       id AS Id,
@@ -63,23 +43,19 @@ internal sealed class GetBookingQueryHandler : IQueryHandler<GetBookingQuery, Bo
 						   WHERE id = @BookingId
 						   """;
 
-		// Executing a query with dapper 
-		var booking = await connection.QueryFirstOrDefaultAsync<BookingResponse>(
-						  sql,
-						  // Anonymous object contains parameters for query which is the BookingId
-						  // because we are trying to fetch booking by the ID.
-						  new
-						  {
-							  request.BookingId
-						  });
+		var booking = await connection.QueryFirstOrDefaultAsync<BookingResponse> (
+							  sql : sql,
+							  param : new
+									  {
+										  request.BookingId
+									  }
+						  );
 
-		// Resource-based Authorization
-		// Through userContext we get the current user 
-		// If current user id is not matching user id which created a booking, we return 404
-		if (booking is null || booking.UserId != _userContext.UserId)
-			return Result.Failure<BookingResponse>(BookingErrors.NotFound);
+		if ( booking is null || booking.UserId != _userContext.UserId )
+			return Result.Failure<BookingResponse> (
+					error : BookingErrors.NotFound
+				);
 
-		//  returning a booking object
 		return booking;
 	}
 }

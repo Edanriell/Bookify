@@ -4,12 +4,13 @@ namespace Bookify.Domain.Abstractions;
 
 public class Result
 {
-	// Can only be accessed from this assembly inside of this type
-	public Result(bool isSuccess, Error error)
+	public Result ( bool isSuccess, Error error )
 	{
-		if (isSuccess && error != Error.None) throw new InvalidOperationException();
+		if ( isSuccess && error != Error.None )
+			throw new InvalidOperationException();
 
-		if (!isSuccess && error == Error.None) throw new InvalidOperationException();
+		if ( !isSuccess && error == Error.None )
+			throw new InvalidOperationException();
 
 		IsSuccess = isSuccess;
 		Error = error;
@@ -21,51 +22,58 @@ public class Result
 
 	public Error Error { get; }
 
-	public static Result Success()
-	{
-		return new Result(true, Error.None);
-	}
+	public static Result Success() => new(
+			isSuccess : true,
+			error : Error.None
+		);
 
-	public static Result Failure(Error error)
-	{
-		return new Result(false, error);
-	}
+	public static Result Failure ( Error error ) => new(
+			isSuccess : false,
+			error : error
+		);
 
-	public static Result<TValue> Success<TValue>(TValue value)
-	{
-		return new Result<TValue>(value, true, Error.None);
-	}
+	public static Result<TValue> Success <TValue> ( TValue value ) => new(
+			value : value,
+			isSuccess : true,
+			error : Error.None
+		);
 
-	public static Result<TValue> Failure<TValue>(Error error)
-	{
-		return new Result<TValue>(default, false, error);
-	}
+	public static Result<TValue> Failure <TValue> ( Error error ) => new(
+			value : default(TValue?),
+			isSuccess : false,
+			error : error
+		);
 
-	public static Result<TValue> Create<TValue>(TValue? value)
-	{
-		return value is not null ? Success(value) : Failure<TValue>(Error.NullValue);
-	}
+	public static Result<TValue> Create <TValue> ( TValue? value ) => value is not null
+																		  ? Success (
+																				  value : value
+																			  )
+																		  : Failure<TValue> (
+																				  error : Error.NullValue
+																			  );
 }
 
-public class Result<TValue> : Result
+public sealed class Result <TValue> : Result
 {
 	private readonly TValue? _value;
 
-	public Result(TValue? value, bool isSuccess, Error error)
-		: base(isSuccess, error)
+	public Result ( TValue? value, bool isSuccess, Error error )
+		: base (
+				isSuccess : isSuccess,
+				error : error
+			)
 	{
 		_value = value;
 	}
 
-	// We can access the value only if this is a success result
-	[NotNull]
+	[ NotNull ]
 	public TValue Value => IsSuccess
 							   ? _value!
-							   : throw new InvalidOperationException(
-									 "The value of a failure result can not be accessed.");
+							   : throw new InvalidOperationException (
+										 message : "The value of a failure result can not be accessed."
+									 );
 
-	public static implicit operator Result<TValue>(TValue? value)
-	{
-		return Create(value);
-	}
+	public static implicit operator Result<TValue> ( TValue? value ) => Create (
+			value : value
+		);
 }

@@ -35,11 +35,9 @@ public class ReviewsController : ControllerBase
 						 );
 
 		if ( result.IsFailure )
-		{
 			return BadRequest (
 					error : result.Error
 				);
-		}
 
 		return Ok();
 	}

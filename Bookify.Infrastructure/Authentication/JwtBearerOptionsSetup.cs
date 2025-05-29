@@ -7,12 +7,12 @@ internal sealed class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOp
 {
 	private readonly AuthenticationOptions _authenticationOptions;
 
-	public JwtBearerOptionsSetup(IOptions<AuthenticationOptions> authenticationOptions)
+	public JwtBearerOptionsSetup ( IOptions<AuthenticationOptions> authenticationOptions )
 	{
 		_authenticationOptions = authenticationOptions.Value;
 	}
 
-	public void Configure(JwtBearerOptions options)
+	public void Configure ( JwtBearerOptions options )
 	{
 		options.Audience = _authenticationOptions.Audience;
 		options.MetadataAddress = _authenticationOptions.MetadataUrl;
@@ -20,8 +20,10 @@ internal sealed class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOp
 		options.TokenValidationParameters.ValidIssuer = _authenticationOptions.Issuer;
 	}
 
-	public void Configure(string? name, JwtBearerOptions options)
+	public void Configure ( string? name, JwtBearerOptions options )
 	{
-		Configure(options);
+		Configure (
+				options : options
+			);
 	}
 }
