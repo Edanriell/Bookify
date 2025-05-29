@@ -6,60 +6,85 @@ using Microsoft.Extensions.Options;
 
 namespace Bookify.Infrastructure.Authentication;
 
-// This service is also going to be a typed HTTP client and it needs access to the Keycloak options
-// instance to access some configuration values. 
 internal sealed class JwtService : IJwtService
 {
 	private static readonly Error AuthenticationFailed = new(
-		"Keycloak.AuthenticationFailed",
-		"Failed to acquire access token do to authentication failure");
+			Code : "Keycloak.AuthenticationFailed",
+			Name : "Failed to acquire access token do to authentication failure"
+		);
 
 	private readonly HttpClient _httpClient;
 	private readonly KeycloakOptions _keycloakOptions;
 
-	public JwtService(HttpClient httpClient, IOptions<KeycloakOptions> keycloakOptions)
+	public JwtService ( HttpClient httpClient, IOptions<KeycloakOptions> keycloakOptions )
 	{
 		_httpClient = httpClient;
 		_keycloakOptions = keycloakOptions.Value;
 	}
 
-	public async Task<Result<string>> GetAccessTokenAsync(
-		string email,
-		string password,
-		CancellationToken cancellationToken = default)
+	public async Task<Result<string>> GetAccessTokenAsync ( string email,
+															string password,
+															CancellationToken cancellationToken
+																= default(CancellationToken) )
 	{
 		try
 		{
-			// We are sending an encoded form request containing our email and
-			// password and the authentication client credentials. 
 			var authRequestParameters = new KeyValuePair<string, string>[]
 										{
-											new("client_id", _keycloakOptions.AuthClientId),
-											new("client_secret", _keycloakOptions.AuthClientSecret),
-											new("scope", "openid email"),
-											new("grant_type", "password"),
-											new("username", email),
-											new("password", password)
+											new(
+													key : "client_id",
+													value : _keycloakOptions.AuthClientId
+												),
+											new(
+													key : "client_secret",
+													value : _keycloakOptions.AuthClientSecret
+												),
+											new(
+													key : "scope",
+													value : "openid email"
+												),
+											new(
+													key : "grant_type",
+													value : "password"
+												),
+											new(
+													key : "username",
+													value : email
+												),
+											new(
+													key : "password",
+													value : password
+												)
 										};
 
-			var authorizationRequestContent = new FormUrlEncodedContent(authRequestParameters);
+			using var authorizationRequestContent = new FormUrlEncodedContent (
+					nameValueCollection : authRequestParameters
+				);
 
-			// Then we are sending a POST request tot the token endpoint. 
-			var response = await _httpClient.PostAsync("", authorizationRequestContent, cancellationToken);
+			var response = await _httpClient.PostAsync (
+								   requestUri : "",
+								   content : authorizationRequestContent,
+								   cancellationToken : cancellationToken
+							   );
 
 			response.EnsureSuccessStatusCode();
 
-			// And we are parsing back an authorization token response. 
-			var authorizationToken = await response.Content.ReadFromJsonAsync<AuthorizationToken>();
+			var authorizationToken = await response.Content.ReadFromJsonAsync<AuthorizationToken> (
+											 cancellationToken : cancellationToken
+										 );
 
-			if (authorizationToken is null) return Result.Failure<string>(AuthenticationFailed);
+			if ( authorizationToken is null )
+				return Result.Failure<string> (
+						error : AuthenticationFailed
+					);
 
-			// If all of this succeeds, we just return an access token from this method.
 			return authorizationToken.AccessToken;
 		}
-		catch (HttpRequestException)
+		catch ( HttpRequestException )
 		{
-			return Result.Failure<string>(AuthenticationFailed);
+			return Result.Failure<string> (
+					error : AuthenticationFailed
+				);
 		}
 	}
 }

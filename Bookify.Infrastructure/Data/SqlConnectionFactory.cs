@@ -15,11 +15,10 @@ internal sealed class SqlConnectionFactory : ISqlConnectionFactory
 
 	public IDbConnection CreateConnection()
 	{
-		// Creating a new Npgsql connection
 		var connection = new NpgsqlConnection(_connectionString);
-		// Opening connection
 		connection.Open();
 
 		return connection;
 	}
 }
+ 

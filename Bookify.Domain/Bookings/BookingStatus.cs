@@ -7,4 +7,4 @@ public enum BookingStatus
 	Rejected = 3,
 	Cancelled = 4,
 	Completed = 5
-} 
+}

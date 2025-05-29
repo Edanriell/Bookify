@@ -6,15 +6,16 @@ namespace Bookify.Domain.Reviews;
 
 public sealed class Review : Entity
 {
-	private Review(
-		Guid id,
-		Guid apartmentId,
-		Guid bookingId,
-		Guid userId,
-		Rating rating,
-		Comment comment,
-		DateTime createdOnUtc)
-		: base(id)
+	private Review ( Guid id,
+					 Guid apartmentId,
+					 Guid bookingId,
+					 Guid userId,
+					 Rating rating,
+					 Comment comment,
+					 DateTime createdOnUtc )
+		: base (
+				id : id
+			)
 	{
 		ApartmentId = apartmentId;
 		BookingId = bookingId;
@@ -24,10 +25,7 @@ public sealed class Review : Entity
 		CreatedOnUtc = createdOnUtc;
 	}
 
-	// Fix for migrations
-	private Review()
-	{
-	}
+	private Review() { }
 
 	public Guid ApartmentId { get; private set; }
 
@@ -41,24 +39,31 @@ public sealed class Review : Entity
 
 	public DateTime CreatedOnUtc { get; private set; }
 
-	public static Result<Review> Create(
-		Booking booking,
-		Rating rating,
-		Comment comment,
-		DateTime createdOnUtc)
+	public static Result<Review> Create ( Booking booking,
+										  Rating rating,
+										  Comment comment,
+										  DateTime createdOnUtc )
 	{
-		if (booking.Status != BookingStatus.Completed) return Result.Failure<Review>(ReviewErrors.NotEligible);
+		if ( booking.Status != BookingStatus.Completed )
+			return Result.Failure<Review> (
+					error : ReviewErrors.NotEligible
+				);
 
-		var review = new Review(
-			Guid.NewGuid(),
-			booking.ApartmentId,
-			booking.Id,
-			booking.UserId,
-			rating,
-			comment,
-			createdOnUtc);
+		var review = new Review (
+				id : Guid.NewGuid(),
+				apartmentId : booking.ApartmentId,
+				bookingId : booking.Id,
+				userId : booking.UserId,
+				rating : rating,
+				comment : comment,
+				createdOnUtc : createdOnUtc
+			);
 
-		review.RaiseDomainEvent(new ReviewCreatedDomainEvent(review.Id));
+		review.RaiseDomainEvent (
+				domainEvent : new ReviewCreatedDomainEvent (
+						ReviewId : review.Id
+					)
+			);
 
 		return review;
 	}

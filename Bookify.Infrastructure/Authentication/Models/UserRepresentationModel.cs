@@ -2,9 +2,7 @@ using Bookify.Domain.Users;
 
 namespace Bookify.Infrastructure.Authentication.Models;
 
-// Contains a lot of information that Key Cloak stores for the user and a static method
-// to map our user entity into a user representation model. 
-public sealed class UserRepresentationModel
+internal sealed class UserRepresentationModel
 {
 	public Dictionary<string, string> Access { get; set; }
 
@@ -48,19 +46,19 @@ public sealed class UserRepresentationModel
 
 	public string Username { get; set; }
 
-	internal static UserRepresentationModel FromUser(User user)
-	{
-		return new UserRepresentationModel
-			   {
-				   FirstName = user.FirstName.Value,
-				   LastName = user.LastName.Value,
-				   Email = user.Email.Value,
-				   Username = user.Email.Value,
-				   Enabled = true,
-				   EmailVerified = true,
-				   CreatedTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-				   Attributes = new Dictionary<string, List<string>>(),
-				   RequiredActions = Array.Empty<string>()
-			   };
-	}
+	internal static UserRepresentationModel FromUser ( User user ) => new()
+																	  {
+																		  FirstName = user.FirstName.Value,
+																		  LastName = user.LastName.Value,
+																		  Email = user.Email.Value,
+																		  Username = user.Email.Value,
+																		  Enabled = true,
+																		  EmailVerified = true,
+																		  CreatedTimestamp
+																			  = DateTimeOffset.UtcNow.
+																				  ToUnixTimeSeconds(),
+																		  Attributes
+																			  = new Dictionary<string, List<string>>(),
+																		  RequiredActions = Array.Empty<string>()
+																	  };
 }

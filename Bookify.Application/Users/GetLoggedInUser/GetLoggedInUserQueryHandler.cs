@@ -12,17 +12,15 @@ internal sealed class GetLoggedInUserQueryHandler
 	private readonly ISqlConnectionFactory _sqlConnectionFactory;
 	private readonly IUserContext _userContext;
 
-	public GetLoggedInUserQueryHandler(
-		ISqlConnectionFactory sqlConnectionFactory,
-		IUserContext userContext)
+	public GetLoggedInUserQueryHandler ( ISqlConnectionFactory sqlConnectionFactory,
+										 IUserContext userContext )
 	{
 		_sqlConnectionFactory = sqlConnectionFactory;
 		_userContext = userContext;
 	}
 
-	public async Task<Result<UserResponse>> Handle(
-		GetLoggedInUserQuery request,
-		CancellationToken cancellationToken)
+	public async Task<Result<UserResponse>> Handle ( GetLoggedInUserQuery request,
+													 CancellationToken cancellationToken )
 	{
 		using var connection = _sqlConnectionFactory.CreateConnection();
 
@@ -36,12 +34,13 @@ internal sealed class GetLoggedInUserQueryHandler
 						   WHERE identity_id = @IdentityId
 						   """;
 
-		var user = await connection.QuerySingleAsync<UserResponse>(
-					   sql,
-					   new
-					   {
-						   _userContext.IdentityId
-					   });
+		var user = await connection.QuerySingleAsync<UserResponse> (
+						   sql : sql,
+						   param : new
+								   {
+									   _userContext.IdentityId
+								   }
+					   );
 
 		return user;
 	}

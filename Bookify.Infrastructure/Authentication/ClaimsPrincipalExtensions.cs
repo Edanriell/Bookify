@@ -3,23 +3,30 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Bookify.Infrastructure.Authentication;
 
-// Role-based Authorization
 internal static class ClaimsPrincipalExtensions
 {
-	// Looks for name identifier claim
-	public static string GetIdentityId(this ClaimsPrincipal? principal)
+	public static Guid GetUserId ( this ClaimsPrincipal? principal )
 	{
-		return principal?.FindFirstValue(ClaimTypes.NameIdentifier) ??
-			   throw new ApplicationException("User identity is unavailable");
-	}
+		var userId = principal?.FindFirstValue (
+				claimType : JwtRegisteredClaimNames.Sub
+			);
 
-	// Resource-based Authorization
-	public static Guid GetUserId(this ClaimsPrincipal? principal)
-	{
-		var userId = principal?.FindFirstValue(JwtRegisteredClaimNames.Sub);
-
-		return Guid.TryParse(userId, out var parsedUserId)
+		return Guid.TryParse (
+					   input : userId,
+					   result : out var parsedUserId
+				   )
 				   ? parsedUserId
-				   : throw new ApplicationException("User identifier is unavailable");
+				   : throw new ApplicationException (
+							 message : "User id is unavailable"
+						 );
 	}
+
+	public static string GetIdentityId ( this ClaimsPrincipal? principal ) => principal?.FindFirstValue (
+																					  claimType : ClaimTypes.
+																						  NameIdentifier
+																				  )
+																		   ?? throw new ApplicationException (
+																					  message :
+																					  "User identity is unavailable"
+																				  );
 }

@@ -13,11 +13,10 @@ internal sealed class AddReviewCommandHandler : ICommandHandler<AddReviewCommand
 	private readonly IReviewRepository _reviewRepository;
 	private readonly IUnitOfWork _unitOfWork;
 
-	public AddReviewCommandHandler(
-		IBookingRepository bookingRepository,
-		IReviewRepository reviewRepository,
-		IUnitOfWork unitOfWork,
-		IDateTimeProvider dateTimeProvider)
+	public AddReviewCommandHandler ( IBookingRepository bookingRepository,
+									 IReviewRepository reviewRepository,
+									 IUnitOfWork unitOfWork,
+									 IDateTimeProvider dateTimeProvider )
 	{
 		_bookingRepository = bookingRepository;
 		_reviewRepository = reviewRepository;
@@ -25,27 +24,48 @@ internal sealed class AddReviewCommandHandler : ICommandHandler<AddReviewCommand
 		_dateTimeProvider = dateTimeProvider;
 	}
 
-	public async Task<Result> Handle(AddReviewCommand request, CancellationToken cancellationToken)
+	public async Task<Result> Handle ( AddReviewCommand request, CancellationToken cancellationToken )
 	{
-		var booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
+		var booking = await _bookingRepository.GetByIdAsync (
+							  id : request.BookingId,
+							  cancellationToken : cancellationToken
+						  );
 
-		if (booking is null) return Result.Failure(BookingErrors.NotFound);
+		if ( booking is null )
+			return Result.Failure (
+					error : BookingErrors.NotFound
+				);
 
-		var ratingResult = Rating.Create(request.Rating);
+		var ratingResult = Rating.Create (
+				value : request.Rating
+			);
 
-		if (ratingResult.IsFailure) return Result.Failure(ratingResult.Error);
+		if ( ratingResult.IsFailure )
+			return Result.Failure (
+					error : ratingResult.Error
+				);
 
-		var reviewResult = Review.Create(
-			booking,
-			ratingResult.Value,
-			new Comment(request.Comment),
-			_dateTimeProvider.UtcNow);
+		var reviewResult = Review.Create (
+				booking : booking,
+				rating : ratingResult.Value,
+				comment : new Comment (
+						Value : request.Comment
+					),
+				createdOnUtc : _dateTimeProvider.UtcNow
+			);
 
-		if (reviewResult.IsFailure) return Result.Failure(reviewResult.Error);
+		if ( reviewResult.IsFailure )
+			return Result.Failure (
+					error : reviewResult.Error
+				);
 
-		_reviewRepository.Add(reviewResult.Value);
+		_reviewRepository.Add (
+				review : reviewResult.Value
+			);
 
-		await _unitOfWork.SaveChangesAsync(cancellationToken);
+		await _unitOfWork.SaveChangesAsync (
+				cancellationToken : cancellationToken
+			);
 
 		return Result.Success();
 	}

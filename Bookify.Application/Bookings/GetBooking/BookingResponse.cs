@@ -1,9 +1,5 @@
 namespace Bookify.Application.Bookings.GetBooking;
 
-// For the query responses, we want to be using primitive types as
-// much as possible, and we want a very flat structure which we can easily return from the database. 
-// All of these properties are already present on the booking, however, they are hidden behind
-// the rich domain model and value objects. 
 public sealed class BookingResponse
 {
 	public Guid Id { get; init; }

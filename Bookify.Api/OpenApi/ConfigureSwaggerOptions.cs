@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Bookify.Api.OpenApi;
 
-public sealed class ConfigureSwaggerOptions : IConfigureNamedOptions<SwaggerGenOptions>
+internal sealed class ConfigureSwaggerOptions : IConfigureNamedOptions<SwaggerGenOptions>
 {
 	private readonly IApiVersionDescriptionProvider _provider;
 
@@ -13,17 +13,13 @@ public sealed class ConfigureSwaggerOptions : IConfigureNamedOptions<SwaggerGenO
 
 	public void Configure ( SwaggerGenOptions options )
 	{
-		// Allows us to get access to version descriptions property and
 		foreach ( var description in _provider.ApiVersionDescriptions )
-			// Add each API version to the Swagger document. 
-		{
 			options.SwaggerDoc (
 					name : description.GroupName,
 					info : CreateVersionInfo (
 							apiVersionDescription : description
 						)
 				);
-		}
 	}
 
 	public void Configure ( string? name, SwaggerGenOptions options )
@@ -35,7 +31,6 @@ public sealed class ConfigureSwaggerOptions : IConfigureNamedOptions<SwaggerGenO
 
 	private static OpenApiInfo CreateVersionInfo ( ApiVersionDescription apiVersionDescription )
 	{
-		// Creates an OpenAPi info object and return it as an argument for the SwaggerDoc method.
 		var openApiInfo = new OpenApiInfo
 						  {
 							  Title = $"Bookify.Api v{apiVersionDescription.ApiVersion}",

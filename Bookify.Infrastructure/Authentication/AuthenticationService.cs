@@ -9,22 +9,18 @@ internal sealed class AuthenticationService : IAuthenticationService
 {
 	private const string PasswordCredentialType = "password";
 
-	// Typed HTTP client that is configured to access the Key Cloak RESTful API.
 	private readonly HttpClient _httpClient;
 
-	public AuthenticationService(HttpClient httpClient)
-	{
-		_httpClient = httpClient;
-	}
+	public AuthenticationService ( HttpClient httpClient ) { _httpClient = httpClient; }
 
-	public async Task<string> RegisterAsync(
-		User user,
-		string password,
-		CancellationToken cancellationToken = default)
+	public async Task<string> RegisterAsync ( User user,
+											  string password,
+											  CancellationToken cancellationToken = default(CancellationToken) )
 	{
-		var userRepresentationModel = UserRepresentationModel.FromUser(user);
+		var userRepresentationModel = UserRepresentationModel.FromUser (
+				user : user
+			);
 
-		// credentials of our user so that they can be able to log in in to Key Cloak. 
 		userRepresentationModel.Credentials = new CredentialRepresentationModel[]
 											  {
 												  new()
@@ -35,34 +31,36 @@ internal sealed class AuthenticationService : IAuthenticationService
 												  }
 											  };
 
-		// We need to send a POST request to this route containing a user representation
-		// model, and we are specifying the 
-		var response = await _httpClient.PostAsJsonAsync(
-						   "users",
-						   userRepresentationModel,
-						   cancellationToken);
+		var response = await _httpClient.PostAsJsonAsync (
+							   requestUri : "users",
+							   value : userRepresentationModel,
+							   cancellationToken : cancellationToken
+						   );
 
-		return ExtractIdentityIdFromLocationHeader(response);
+		return ExtractIdentityIdFromLocationHeader (
+				httpResponseMessage : response
+			);
 	}
 
-	private static string ExtractIdentityIdFromLocationHeader(
-		HttpResponseMessage httpResponseMessage)
+	private static string ExtractIdentityIdFromLocationHeader ( HttpResponseMessage httpResponseMessage )
 	{
 		const string usersSegmentName = "users/";
 
 		var locationHeader = httpResponseMessage.Headers.Location?.PathAndQuery;
 
-		if (locationHeader is null) throw new InvalidOperationException("Location header can't be null");
+		if ( locationHeader is null )
+			throw new InvalidOperationException (
+					message : "Location header can't be null"
+				);
 
-		var userSegmentValueIndex = locationHeader.IndexOf(
-			usersSegmentName,
-			StringComparison.InvariantCultureIgnoreCase);
+		var userSegmentValueIndex = locationHeader.IndexOf (
+				value : usersSegmentName,
+				comparisonType : StringComparison.InvariantCultureIgnoreCase
+			);
 
-		// Here we're extracting of the user identity ID
-		// from the location header on the response because the 
-		// response itself doesn't return anything in the response body.
-		var userIdentityId = locationHeader.Substring(
-			userSegmentValueIndex + usersSegmentName.Length);
+		var userIdentityId = locationHeader.Substring (
+				startIndex : userSegmentValueIndex + usersSegmentName.Length
+			);
 
 		return userIdentityId;
 	}

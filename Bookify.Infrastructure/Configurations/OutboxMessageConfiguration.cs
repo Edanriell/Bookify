@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Bookify.Infrastructure.Configurations;
 
-// Transactional Outbox Pattern
 internal sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage>
 {
 	public void Configure ( EntityTypeBuilder<OutboxMessage> builder )

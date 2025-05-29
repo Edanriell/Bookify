@@ -6,58 +6,49 @@ using ValidationException = Bookify.Application.Exceptions.ValidationException;
 
 namespace Bookify.Application.Abstractions.Behaviors;
 
-// Pipeline behavior it has a request and response generic argument, and the request 
-// has to be a base command because we only want to be running validation for our commands.
-public class ValidationBehavior<TRequest, TResponse>
+internal sealed class ValidationBehavior <TRequest, TResponse>
 	: IPipelineBehavior<TRequest, TResponse>
 	where TRequest : IBaseCommand
 {
-	// FluentValidation library exposes the IValidator interface we can inject one or more
-	// IValidator instances for our TRequest which is going to be our command.
-	// We are injecting here any validators that are defined for this TRequest in our case this is
-	// going to be the command. 
 	private readonly IEnumerable<IValidator<TRequest>> _validators;
 
-	public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
+	public ValidationBehavior ( IEnumerable<IValidator<TRequest>> validators ) { _validators = validators; }
+
+	public async Task<TResponse> Handle ( TRequest request,
+										  RequestHandlerDelegate<TResponse> next,
+										  CancellationToken cancellationToken )
 	{
-		_validators = validators;
-	}
+		if ( !_validators.Any() )
+			return await next();
 
-	public async Task<TResponse> Handle(
-		TRequest request,
-		RequestHandlerDelegate<TResponse> next,
-		CancellationToken cancellationToken)
-	{
-		// We check if we have any validators defined for this type. 
-		// If we don't have any validators, let's just invoke the command handler
-		// and return from the pipeline. 
-		if (!_validators.Any()) return await next();
+		var context = new ValidationContext<TRequest> (
+				instanceToValidate : request
+			);
 
-		// Otherwise, if we do have validators,
-		// we need to create a new validation context and pass it to our command instance 
-		var context = new ValidationContext<TRequest>(request);
+		var validationErrors = _validators.Select (
+					selector : validator => validator.Validate (
+							context : context
+						)
+				).
+			Where (
+					predicate : validationResult => validationResult.Errors.Any()
+				).
+			SelectMany (
+					selector : validationResult => validationResult.Errors
+				).
+			Select (
+					selector : validationFailure => new ValidationError (
+							PropertyName : validationFailure.PropertyName,
+							ErrorMessage : validationFailure.ErrorMessage
+						)
+				).
+			ToList();
 
-		// Then we are going to execute our validators by iterating over them
-		// using the select method from the lin library. 
-		var validationErrors = _validators
-			// We are going to call the validate method on each of the validators
-		   .Select(validator => validator.Validate(context))
-			// and if the validation results returned by this method have an error 
-		   .Where(validationResult => validationResult.Errors.Any())
-			// we are going to select all of them, and we are going to project 
-		   .SelectMany(validationResult => validationResult.Errors)
-			// these errors into a new validation error instance. 
-		   .Select(validationFailure => new ValidationError(
-				validationFailure.PropertyName,
-				validationFailure.ErrorMessage))
-		   .ToList();
+		if ( validationErrors.Any() )
+			throw new ValidationException (
+					errors : validationErrors
+				);
 
-		// After getting back a list of validation errors, we check if we 
-		// have any errors present, and if that is true, we are going to throw our
-		// custom validation exception.
-		if (validationErrors.Any()) throw new ValidationException(validationErrors);
-
-		// And if we don't have any validation errors, we can execute our command normally
 		return await next();
 	}
 }

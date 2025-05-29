@@ -11,29 +11,38 @@ internal sealed class CancelBookingCommandHandler : ICommandHandler<CancelBookin
 	private readonly IDateTimeProvider _dateTimeProvider;
 	private readonly IUnitOfWork _unitOfWork;
 
-	public CancelBookingCommandHandler(
-		IDateTimeProvider dateTimeProvider,
-		IBookingRepository bookingRepository,
-		IUnitOfWork unitOfWork)
+	public CancelBookingCommandHandler ( IDateTimeProvider dateTimeProvider,
+										 IBookingRepository bookingRepository,
+										 IUnitOfWork unitOfWork )
 	{
 		_dateTimeProvider = dateTimeProvider;
 		_bookingRepository = bookingRepository;
 		_unitOfWork = unitOfWork;
 	}
 
-	public async Task<Result> Handle(
-		CancelBookingCommand request,
-		CancellationToken cancellationToken)
+	public async Task<Result> Handle ( CancelBookingCommand request,
+									   CancellationToken cancellationToken )
 	{
-		var booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
+		var booking = await _bookingRepository.GetByIdAsync (
+							  id : request.BookingId,
+							  cancellationToken : cancellationToken
+						  );
 
-		if (booking is null) return Result.Failure(BookingErrors.NotFound);
+		if ( booking is null )
+			return Result.Failure (
+					error : BookingErrors.NotFound
+				);
 
-		var result = booking.Cancel(_dateTimeProvider.UtcNow);
+		var result = booking.Cancel (
+				utcNow : _dateTimeProvider.UtcNow
+			);
 
-		if (result.IsFailure) return result;
+		if ( result.IsFailure )
+			return result;
 
-		await _unitOfWork.SaveChangesAsync(cancellationToken);
+		await _unitOfWork.SaveChangesAsync (
+				cancellationToken : cancellationToken
+			);
 
 		return Result.Success();
 	}

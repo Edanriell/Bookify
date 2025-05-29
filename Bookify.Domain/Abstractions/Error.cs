@@ -1,9 +1,14 @@
 namespace Bookify.Domain.Abstractions;
 
-// Error represents that something went wrong and we want to assign it a unique code and a name
-public record Error(string Code, string Name)
+public record Error ( string Code, string Name )
 {
-	public static Error None = new(string.Empty, string.Empty);
+	public static readonly Error None = new(
+			Code : string.Empty,
+			Name : string.Empty
+		);
 
-	public static Error NullValue = new("Error.NullValue", "Null value was provided");
+	public static readonly Error NullValue = new(
+			Code : "Error.NullValue",
+			Name : "Null value was provided"
+		);
 }

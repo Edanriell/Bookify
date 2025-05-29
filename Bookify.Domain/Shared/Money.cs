@@ -1,29 +1,32 @@
 namespace Bookify.Domain.Shared;
 
-public record Money(decimal Amount, Currency Currency)
+public sealed record Money ( decimal Amount, Currency Currency )
 {
-	// Operator overloading, if we want to add to instances of Money class, we can use + operator
-	public static Money operator +(Money first, Money second)
+	public static Money operator + ( Money first, Money second )
 	{
-		// The Currency has to be equal, otherwise we can't add two money instances
-		if (first.Currency != second.Currency) throw new InvalidOperationException("Currencies have to be equal");
+		if ( first.Currency != second.Currency )
+			throw new InvalidOperationException (
+					message : "Currencies have to be equal"
+				);
 
-		return new Money(first.Amount + second.Amount, first.Currency);
+		return new Money (
+				Amount : first.Amount + second.Amount,
+				Currency : first.Currency
+			);
 	}
 
-	// Static method which allows us to create a money instance with no value
-	public static Money Zero()
-	{
-		return new Money(0, Currency.None);
-	}
+	public static Money Zero() => new(
+			Amount : 0,
+			Currency : Currency.None
+		);
 
-	public static Money Zero(Currency currency)
-	{
-		return new Money(0, currency);
-	}
+	public static Money Zero ( Currency currency ) => new(
+			Amount : 0,
+			Currency : currency
+		);
 
-	public bool IsZero()
-	{
-		return this == Zero(Currency);
-	}
+	public bool IsZero() => this
+						 == Zero (
+									currency : Currency
+								);
 }

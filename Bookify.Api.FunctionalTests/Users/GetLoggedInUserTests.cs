@@ -32,6 +32,26 @@ public class GetLoggedInUserTests : BaseFunctionalTest
 				);
 	}
 
+//	[ Fact ]
+//	public async Task Get_ShouldReturnUser_WhenAccessTokenIsNotMissing()
+//	{
+//		// Arrange
+//		var accessToken = await GetAccessToken();
+//		HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue (
+//				scheme : JwtBearerDefaults.AuthenticationScheme,
+//				parameter : accessToken
+//			);
+// 
+//		// Act
+//		var user = await HttpClient.GetFromJsonAsync<UserResponse> (
+//						   requestUri : "api/v1/users/me"
+//					   );
+// 
+//		// Assert
+//		user.Should().
+//			NotBeNull();
+//	}
+
 	[ Fact ]
 	public async Task Get_ShouldReturnUser_WhenAccessTokenIsNotMissing()
 	{
@@ -43,9 +63,22 @@ public class GetLoggedInUserTests : BaseFunctionalTest
 			);
 
 		// Act
-		var user = await HttpClient.GetFromJsonAsync<UserResponse> (
-						   requestUri : "api/v1/users/me"
-					   );
+		var response = await HttpClient.GetAsync (
+							   requestUri : "api/v1/users/me"
+						   );
+
+		// Get more error details
+		if ( !response.IsSuccessStatusCode )
+		{
+			var errorContent = await response.Content.ReadAsStringAsync();
+			Console.WriteLine (
+					value : $"Error response: {errorContent}"
+				);
+		}
+
+		response.EnsureSuccessStatusCode();
+
+		var user = await response.Content.ReadFromJsonAsync<UserResponse>();
 
 		// Assert
 		user.Should().
