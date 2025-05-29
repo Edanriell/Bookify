@@ -30,9 +30,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include=".files\bookify-realm-export.json">
+        <Content Include=".files\bookify-realm-export.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
