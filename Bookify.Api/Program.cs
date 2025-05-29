@@ -135,8 +135,7 @@ app.Run();
 // IMPORTANT
 // From Bookify root
 // To create a new migration, run the following command:
-// dotnet ef migrations add Create_Database --project .\Bookify.Infrastructure\Bookify.Infrastructure.csproj
-// --startup-project .\Bookify.Api\Bookify.Api.csproj
+//dotnet ef migrations add Create_Database --project .\Bookify.Infrastructure\Bookify.Infrastructure.csproj --startup-project .\Bookify.Api\Bookify.Api.csproj
 
 // Custom health check
 // public class CustomSqlHealthCheck ( ISqlConnectionFactory sqlConnectionFactory ) : IHealthCheck
