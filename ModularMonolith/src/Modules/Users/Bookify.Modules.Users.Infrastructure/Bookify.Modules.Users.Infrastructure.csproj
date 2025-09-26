@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Bookify.Infrastructure\Bookify.Infrastructure.csproj"/>
+        <ProjectReference Include="..\Bookify.Modules.Users.Application\Bookify.Modules.Users.Application.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bookify.Application.IntegrationTests"/>
+        <InternalsVisibleTo Include="Bookify.Api.FunctionalTests"/>
+    </ItemGroup>
+</Project>
+ 

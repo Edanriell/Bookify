@@ -1,0 +1,61 @@
+﻿using Bookify.Application.Abstractions.Clock;
+using Bookify.Application.Abstractions.Messaging;
+using Bookify.Domain.Abstractions;
+using Bookify.Modules.Bookings.Domain.Bookings;
+using Bookify.Modules.Bookings.Domain.Reviews;
+
+namespace Bookify.Modules.Bookings.Application.Reviews.AddReview;
+
+internal sealed class AddReviewCommandHandler : ICommandHandler<AddReviewCommand>
+{
+	private readonly IBookingRepository _bookingRepository;
+	private readonly IDateTimeProvider _dateTimeProvider;
+	private readonly IReviewRepository _reviewRepository;
+	private readonly IUnitOfWork _unitOfWork;
+
+	public AddReviewCommandHandler(
+		IBookingRepository bookingRepository,
+		IReviewRepository reviewRepository,
+		IUnitOfWork unitOfWork,
+		IDateTimeProvider dateTimeProvider)
+	{
+		_bookingRepository = bookingRepository;
+		_reviewRepository = reviewRepository;
+		_unitOfWork = unitOfWork;
+		_dateTimeProvider = dateTimeProvider;
+	}
+
+	public async Task<Result> Handle(AddReviewCommand request, CancellationToken cancellationToken)
+	{
+		Booking? booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
+
+		if (booking is null)
+		{
+			return Result.Failure(BookingErrors.NotFound);
+		}
+
+		Result<Rating> ratingResult = Rating.Create(request.Rating);
+
+		if (ratingResult.IsFailure)
+		{
+			return Result.Failure(ratingResult.Error);
+		}
+
+		Result<Review> reviewResult = Review.Create(
+			booking,
+			ratingResult.Value,
+			new Comment(request.Comment),
+			_dateTimeProvider.UtcNow);
+
+		if (reviewResult.IsFailure)
+		{
+			return Result.Failure(reviewResult.Error);
+		}
+
+		_reviewRepository.Add(reviewResult.Value);
+
+		await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+		return Result.Success();
+	}
+}
